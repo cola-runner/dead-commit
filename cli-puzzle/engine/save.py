@@ -7,12 +7,13 @@ SAVE_DIR = Path(__file__).parent.parent / "saves"
 SAVE_FILE = SAVE_DIR / "save.json"
 
 
-def save_game(scene_id: str, inventory: dict, flags: list[str]):
+def save_game(scene_id: str, inventory: dict, flags: list[str], lang: str = "zh"):
     SAVE_DIR.mkdir(exist_ok=True)
     data = {
         "scene_id": scene_id,
         "inventory": inventory,
         "flags": flags,
+        "lang": lang,
     }
     SAVE_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2))
 

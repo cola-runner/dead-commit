@@ -103,6 +103,7 @@ class SceneManager:
         self.scenes: dict[str, Scene] = {}
         self.current: Scene | None = None
         self.flags: list[str] = []
+        self.lang: str = "zh"  # "zh" or "en"
 
     def load_chapter(self, chapter_file: str):
         path = CONTENT_DIR / chapter_file
