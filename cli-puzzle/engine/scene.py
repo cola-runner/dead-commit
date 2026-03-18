@@ -3,10 +3,34 @@
 from __future__ import annotations
 
 import json
+import os
 import random
 from pathlib import Path
 
 CONTENT_DIR = Path(__file__).parent.parent / "content"
+
+
+def _get_player_name() -> str:
+    """Get the real system username for immersive storytelling."""
+    try:
+        return os.getlogin()
+    except OSError:
+        return os.environ.get("USER", os.environ.get("USERNAME", "player"))
+
+
+def _substitute_player_name(obj, player_name: str):
+    """Recursively replace {player_name} placeholders in JSON data (keys and values)."""
+    if isinstance(obj, str):
+        return obj.replace("{player_name}", player_name)
+    elif isinstance(obj, dict):
+        return {
+            k.replace("{player_name}", player_name) if isinstance(k, str) else k:
+            _substitute_player_name(v, player_name)
+            for k, v in obj.items()
+        }
+    elif isinstance(obj, list):
+        return [_substitute_player_name(item, player_name) for item in obj]
+    return obj
 
 
 class Scene:
@@ -83,6 +107,8 @@ class SceneManager:
     def load_chapter(self, chapter_file: str):
         path = CONTENT_DIR / chapter_file
         data = json.loads(path.read_text())
+        player_name = _get_player_name()
+        data = _substitute_player_name(data, player_name)
         for scene_data in data["scenes"]:
             scene = Scene(scene_data)
             self.scenes[scene.id] = scene

@@ -20,11 +20,17 @@ SCENE_IMAGES_DIR = CONTENT_DIR / "scene_images"
 
 # Map scene ascii_art references to image files
 ART_TO_IMAGE = {
-    "locked_room.txt": "locked_room.png",
-    "server_room.txt": "server_room.png",
-    "encrypted_terminal.txt": "encrypted_terminal.png",
-    "final_message.txt": "final_message.png",
+    "locked_room.txt": "bedroom.png",
+    "server_room.txt": "prod_server.png",
+    "encrypted_terminal.txt": "supply_chain.png",
+    "final_message.txt": "the_mirror.png",
     "title.txt": "title.png",
+    # Direct mappings for new scene names
+    "bedroom.png": "bedroom.png",
+    "prod_server.png": "prod_server.png",
+    "code_review.png": "code_review.png",
+    "supply_chain.png": "supply_chain.png",
+    "the_mirror.png": "the_mirror.png",
 }
 
 
@@ -237,7 +243,7 @@ class PuzzleApp(App):
             terminal.write("[dim]输入 [bold]start[/bold] 开始游戏。[/dim]\n")
 
     def _start_game(self, terminal: TerminalLog):
-        scene, enter_msg = self.scene_mgr.go_to("locked_room")
+        scene, enter_msg = self.scene_mgr.go_to("bedroom")
         if scene.ascii_art_file:
             self._update_scene_art(scene.ascii_art_file)
         terminal.clear()

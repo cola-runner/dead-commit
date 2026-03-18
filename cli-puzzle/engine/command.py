@@ -51,7 +51,7 @@ def parse_command(
     if cmd in ("bag", "inventory"):
         return CommandResult(message=inventory.list_items())
     if cmd == "cat":
-        return _cmd_cat(arg, scene, inventory)
+        return _cmd_cat(arg, scene, scene_mgr, inventory)
     if cmd == "take":
         return _cmd_take(arg, scene, inventory)
     if cmd == "use":
@@ -116,9 +116,27 @@ def _cmd_ls(scene) -> CommandResult:
     return CommandResult(message=item_list)
 
 
-def _cmd_cat(arg: str, scene, inventory) -> CommandResult:
+def _cmd_cat(arg: str, scene, scene_mgr, inventory) -> CommandResult:
     if not arg:
         return CommandResult(message="[dim]cat 什么？试试 [bold]cat <物品名>[/bold][/dim]")
+
+    # Check if cat triggers a scene transition
+    trigger = f"cat_{arg}"
+    inv_names = list(inventory.items.keys())
+    transition = scene.check_transition(trigger, scene_mgr.flags, inv_names)
+    if transition:
+        # Read the item content first, then transition
+        content = scene.read_item(arg)
+        message = content if content and arg in scene.items else ""
+        if transition.get("message"):
+            message = (message + "\n\n" + transition["message"]) if message else transition["message"]
+        result = CommandResult(
+            message=message,
+            scene_change=transition.get("target_scene", ""),
+        )
+        if "add_flag" in transition:
+            result.add_flag = transition["add_flag"]
+        return result
 
     # Check inventory first, then scene
     if inventory.has(arg):
@@ -177,11 +195,12 @@ def _cmd_use(arg: str, scene, scene_mgr, inventory) -> CommandResult:
 
 
 def _cmd_ssh(arg: str, scene, scene_mgr, inventory) -> CommandResult:
-    if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：ssh。输入 [bold]help[/bold] 查看可用命令。[/dim]")
     if not arg:
+        if not scene_mgr.has_flag("unlock_advanced"):
+            return CommandResult(message="[dim]不认识的命令：ssh。输入 [bold]help[/bold] 查看可用命令。[/dim]")
         return CommandResult(message="[dim]ssh 到哪里？试试 [bold]ssh <地址>[/bold][/dim]")
 
+    # Always check for scene transitions first (some scenes use ssh to progress)
     trigger = f"ssh_{arg}"
     inv_names = list(inventory.items.keys())
     transition = scene.check_transition(trigger, scene_mgr.flags, inv_names)
@@ -193,6 +212,9 @@ def _cmd_ssh(arg: str, scene, scene_mgr, inventory) -> CommandResult:
         if "add_flag" in transition:
             result.add_flag = transition["add_flag"]
         return result
+
+    if not scene_mgr.has_flag("unlock_advanced"):
+        return CommandResult(message="[dim]不认识的命令：ssh。输入 [bold]help[/bold] 查看可用命令。[/dim]")
 
     return CommandResult(message=f"[red]连接失败：{arg} 无法访问。[/red]")
 
@@ -219,11 +241,20 @@ def _cmd_grep(arg: str, scene, scene_mgr, inventory) -> CommandResult:
 
     grep_cmd = scene.commands.get("grep")
     if grep_cmd:
-        # Check if the keyword matches
+        # Check if the keyword matches (case-insensitive)
         keywords = grep_cmd.get("keywords", {})
         search_term = arg.split()[0].lower()
+        # Try exact match first, then case-insensitive
+        matched_key = None
         if search_term in keywords:
-            result = CommandResult(message=keywords[search_term])
+            matched_key = search_term
+        else:
+            for key in keywords:
+                if key.lower() == search_term:
+                    matched_key = key
+                    break
+        if matched_key is not None:
+            result = CommandResult(message=keywords[matched_key])
             if "add_flag" in grep_cmd:
                 result.add_flag = grep_cmd["add_flag"]
             return result
