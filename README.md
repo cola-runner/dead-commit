@@ -32,10 +32,17 @@ You play by typing real commands: `ls`, `cat`, `grep`, `ssh`, `decrypt`, `kill`.
 ### Install & Play
 
 ```bash
+pip install git+https://github.com/cola-runner/dead-commit.git
+dead-commit
+```
+
+Or clone and run locally:
+
+```bash
 git clone https://github.com/cola-runner/dead-commit.git
 cd dead-commit
-pip install -r requirements.txt
-python main.py
+pip install .
+dead-commit
 ```
 
 Requires Python 3.10+ and a terminal that supports 256 colors.

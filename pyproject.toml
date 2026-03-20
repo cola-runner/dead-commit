@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dead-commit"
+version = "0.1.0"
+description = "A terminal-based mystery game. Use real Linux commands to investigate a supply chain attack."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "textual>=0.89.0",
+    "rich>=13.0.0",
+    "rich-pixels>=3.0.0",
+    "Pillow>=10.0.0",
+]
+
+[project.scripts]
+dead-commit = "main:main"
+
+[tool.setuptools]
+py-modules = ["main", "app"]
+
+[tool.setuptools.packages.find]
+include = ["engine*", "content*"]
+
+[tool.setuptools.package-data]
+content = ["**/*.json", "**/*.txt", "**/*.png"]
