@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI Puzzle Game - Offline Signal (离线信号)"""
+"""DEAD COMMIT - A CLI puzzle game"""
 
 from app import PuzzleApp
 

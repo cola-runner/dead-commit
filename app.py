@@ -1,4 +1,4 @@
-"""CLI Puzzle Game - Textual App."""
+"""DEAD COMMIT - Terminal puzzle game."""
 
 from pathlib import Path
 
@@ -154,7 +154,7 @@ class PuzzleApp(App):
             )
         else:
             terminal.write(
-                "[bold cyan]《离线信号》 / Offline Signal[/bold cyan]\n\n"
+                "[bold cyan]DEAD COMMIT[/bold cyan]\n\n"
                 "[dim]选择语言 / Choose language:[/dim]\n\n"
                 "  [bold cyan]1[/bold cyan] - 中文\n"
                 "  [bold cyan]2[/bold cyan] - English\n"
@@ -240,14 +240,14 @@ class PuzzleApp(App):
                 self.lang = "zh"
                 self._load_chapters()
                 terminal.write(
-                    "\n[bold cyan]《离线信号》[/bold cyan]\n\n"
+                    "\n[bold cyan]DEAD COMMIT[/bold cyan]\n\n"
                     "[dim]输入 [bold]start[/bold] 开始游戏。[/dim]\n"
                 )
             elif cmd in ("2", "english", "en", "eng"):
                 self.lang = "en"
                 self._load_chapters()
                 terminal.write(
-                    "\n[bold cyan]Offline Signal[/bold cyan]\n\n"
+                    "\n[bold cyan]DEAD COMMIT[/bold cyan]\n\n"
                     "[dim]Type [bold]start[/bold] to begin.[/dim]\n"
                 )
             else:
