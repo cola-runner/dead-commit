@@ -28,7 +28,6 @@
   const SKILL_SHOT_TIME = 3.2;
   const MAX_MANA = 6;
   const TRAIL_MAX = 18;
-  const MAX_PARTICLES = 150;
 
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
@@ -137,23 +136,6 @@
     const dy = y2 - y1;
     const length = Math.hypot(dx, dy) || 1;
     return { x: -dy / length, y: dx / length };
-  }
-
-  function resolveCollision(ball, nx, ny, penetration, bounceFactor) {
-    ball.x += nx * penetration;
-    ball.y += ny * penetration;
-    const normalSpeed = ball.vx * nx + ball.vy * ny;
-    if (normalSpeed < 0) {
-      ball.vx -= bounceFactor * normalSpeed * nx;
-      ball.vy -= bounceFactor * normalSpeed * ny;
-    }
-  }
-
-  function computeNormal(dx, dy, distance, fallbackFn) {
-    if (distance <= 0.001) {
-      return fallbackFn();
-    }
-    return { x: dx / distance, y: dy / distance };
   }
 
   function roundRectPath(context, x, y, w, h, r) {
@@ -288,7 +270,7 @@
     }
 
     makeBoss(floor) {
-      const maxHp = 34 + floor * 12 + floor * floor * 3;
+      const maxHp = 34 + floor * 16;
       return {
         name: bosses[(floor - 1) % bosses.length],
         hp: maxHp,
@@ -428,7 +410,7 @@
       this.charge = 0;
       this.skillShotReady = false;
       this.skillShotTimer = 0;
-      this.ballSaveTimer = Math.max(1.5, BALL_SAVE_TIME + this.stats.ballSaveBonus - (this.floor - 1) * 0.3);
+      this.ballSaveTimer = BALL_SAVE_TIME + this.stats.ballSaveBonus;
       this.ballTrail = [];
     }
 
@@ -469,9 +451,6 @@
           life: rand(0.24, 0.6),
           color,
         });
-      }
-      if (this.particles.length > MAX_PARTICLES) {
-        this.particles.splice(0, this.particles.length - MAX_PARTICLES);
       }
     }
 
@@ -775,26 +754,33 @@
       if (!this.ball) {
         return;
       }
-      const bx = this.ball.x;
-      const by = this.ball.y;
       for (const segment of this.table.segments) {
-        const limit = this.ball.r + segment.thickness;
-        const sMinX = Math.min(segment.x1, segment.x2) - limit;
-        const sMaxX = Math.max(segment.x1, segment.x2) + limit;
-        const sMinY = Math.min(segment.y1, segment.y2) - limit;
-        const sMaxY = Math.max(segment.y1, segment.y2) + limit;
-        if (bx < sMinX || bx > sMaxX || by < sMinY || by > sMaxY) {
-          continue;
-        }
-        const point = nearestPointOnSegment(bx, by, segment.x1, segment.y1, segment.x2, segment.y2);
+        const point = nearestPointOnSegment(this.ball.x, this.ball.y, segment.x1, segment.y1, segment.x2, segment.y2);
         const dx = this.ball.x - point.x;
         const dy = this.ball.y - point.y;
         const distance = Math.hypot(dx, dy);
+        const limit = this.ball.r + segment.thickness;
         if (distance >= limit) {
           continue;
         }
-        const normal = computeNormal(dx, dy, distance, () => segmentNormal(segment.x1, segment.y1, segment.x2, segment.y2));
-        resolveCollision(this.ball, normal.x, normal.y, limit - distance, 1.8);
+        let nx;
+        let ny;
+        if (distance <= 0.001) {
+          const normal = segmentNormal(segment.x1, segment.y1, segment.x2, segment.y2);
+          nx = normal.x;
+          ny = normal.y;
+        } else {
+          nx = dx / distance;
+          ny = dy / distance;
+        }
+        const penetration = limit - distance;
+        this.ball.x += nx * penetration;
+        this.ball.y += ny * penetration;
+        const normalSpeed = this.ball.vx * nx + this.ball.vy * ny;
+        if (normalSpeed < 0) {
+          this.ball.vx -= 1.8 * normalSpeed * nx;
+          this.ball.vy -= 1.8 * normalSpeed * ny;
+        }
         if ((segment.name === "left-sling" || segment.name === "right-sling") && !this.cooldownActive(segment.name)) {
           this.setCooldown(segment.name, 0.12);
           this.ball.vx += segment.name === "left-sling" ? 220 : -220;
@@ -827,12 +813,24 @@
         if (distance >= limit) {
           continue;
         }
-        const normal = computeNormal(dx, dy, distance, () => ({ x: 0, y: -1 }));
-        const bounce = circle === this.table.core ? 1.78 : 1.6;
-        resolveCollision(this.ball, normal.x, normal.y, limit - distance, bounce);
+        let nx = dx / (distance || 1);
+        let ny = dy / (distance || 1);
+        if (distance < 0.0001) {
+          nx = 0;
+          ny = -1;
+        }
+        const penetration = limit - distance;
+        this.ball.x += nx * penetration;
+        this.ball.y += ny * penetration;
+        const normalSpeed = this.ball.vx * nx + this.ball.vy * ny;
+        if (normalSpeed < 0) {
+          const bounce = circle === this.table.core ? 1.78 : 1.6;
+          this.ball.vx -= bounce * normalSpeed * nx;
+          this.ball.vy -= bounce * normalSpeed * ny;
+        }
 
         if (circle.kind?.startsWith("brazier")) {
-          this.handleBrazierHit(circle, normal.x, normal.y);
+          this.handleBrazierHit(circle, nx, ny);
         } else if (circle.letter) {
           this.handleRuneHit(circle);
         } else if (circle === this.table.core) {
@@ -923,14 +921,25 @@
         if (distance >= limit) {
           continue;
         }
-        const normal = computeNormal(dx, dy, distance, () => segmentNormal(segment.x1, segment.y1, segment.x2, segment.y2));
-        let nx = normal.x;
-        let ny = normal.y;
+        let nx = dx / (distance || 1);
+        let ny = dy / (distance || 1);
+        if (distance < 0.0001) {
+          const normal = segmentNormal(segment.x1, segment.y1, segment.x2, segment.y2);
+          nx = normal.x;
+          ny = normal.y;
+        }
         if (ny < -0.1) {
           nx = -nx;
           ny = -ny;
         }
-        resolveCollision(this.ball, nx, ny, limit - distance, 1.85);
+        const penetration = limit - distance;
+        this.ball.x += nx * penetration;
+        this.ball.y += ny * penetration;
+        const normalSpeed = this.ball.vx * nx + this.ball.vy * ny;
+        if (normalSpeed < 0) {
+          this.ball.vx -= 1.85 * normalSpeed * nx;
+          this.ball.vy -= 1.85 * normalSpeed * ny;
+        }
 
         const side = flipper.side === "left" ? 1 : -1;
         const boost = 1 + this.stats.flipperBoost;
@@ -944,29 +953,28 @@
       }
     }
 
-    handleOrbitTrigger(zone, pushVx) {
-      if (!this.ball || this.ball.vy >= 0 || this.cooldownActive(zone.name)) {
-        return;
-      }
-      const b = this.ball;
-      if (b.x < zone.left || b.x > zone.right || b.y < zone.top || b.y > zone.bottom) {
-        return;
-      }
-      this.setCooldown(zone.name, 0.35);
-      this.earnGold(this.stats.orbitGold, b.x, b.y);
-      this.gainMana(1, b.x, b.y);
-      this.lightNextRune(b.x, b.y);
-      b.vx = pushVx > 0 ? Math.max(b.vx, pushVx) : Math.min(b.vx, pushVx);
-      this.showMessage(zone.name === "left-orbit" ? "Left orbit" : "Right orbit", 0.55);
-    }
-
     handleTriggers() {
       if (!this.ball) {
         return;
       }
 
-      this.handleOrbitTrigger(this.table.leftOrbit, 620);
-      this.handleOrbitTrigger(this.table.rightOrbit, -620);
+      if (this.ball.x >= this.table.leftOrbit.left && this.ball.x <= this.table.leftOrbit.right && this.ball.y >= this.table.leftOrbit.top && this.ball.y <= this.table.leftOrbit.bottom && this.ball.vy < 0 && !this.cooldownActive("left-orbit")) {
+        this.setCooldown("left-orbit", 0.35);
+        this.earnGold(this.stats.orbitGold, this.ball.x, this.ball.y);
+        this.gainMana(1, this.ball.x, this.ball.y);
+        this.lightNextRune(this.ball.x, this.ball.y);
+        this.ball.vx = Math.max(this.ball.vx, 620);
+        this.showMessage("Left orbit", 0.55);
+      }
+
+      if (this.ball.x >= this.table.rightOrbit.left && this.ball.x <= this.table.rightOrbit.right && this.ball.y >= this.table.rightOrbit.top && this.ball.y <= this.table.rightOrbit.bottom && this.ball.vy < 0 && !this.cooldownActive("right-orbit")) {
+        this.setCooldown("right-orbit", 0.35);
+        this.earnGold(this.stats.orbitGold, this.ball.x, this.ball.y);
+        this.gainMana(1, this.ball.x, this.ball.y);
+        this.lightNextRune(this.ball.x, this.ball.y);
+        this.ball.vx = Math.min(this.ball.vx, -620);
+        this.showMessage("Right orbit", 0.55);
+      }
 
       if (this.skillShotReady && this.ball.x > PLUNGER_LEFT - 6 && this.ball.y < GATE_Y) {
         this.skillShotReady = false;
