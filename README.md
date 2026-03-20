@@ -32,7 +32,7 @@ You play by typing real commands: `ls`, `cat`, `grep`, `ssh`, `decrypt`, `kill`.
 ### Install & Play
 
 ```bash
-git clone https://github.com/your-username/dead-commit.git
+git clone https://github.com/cola-runner/dead-commit.git
 cd dead-commit
 pip install -r requirements.txt
 python main.py
@@ -94,7 +94,7 @@ MIT
 ### 安装 & 运行
 
 ```bash
-git clone https://github.com/your-username/dead-commit.git
+git clone https://github.com/cola-runner/dead-commit.git
 cd dead-commit
 pip install -r requirements.txt
 python main.py
