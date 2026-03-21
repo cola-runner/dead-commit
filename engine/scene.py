@@ -57,6 +57,8 @@ class Scene:
         else:
             self.transitions = dict(raw_trans)
         self.on_enter: str = data.get("on_enter", "")
+        self.hints: list[str] = data.get("hints", [])
+        self.hint_index: int = 0
         self.picked_up: set[str] = set()
 
     def get_ascii_art(self) -> str:

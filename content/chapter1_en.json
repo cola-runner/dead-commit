@@ -7,6 +7,11 @@
       "ascii_art": "locked_room.txt",
       "description": "3 AM. Your bedroom. Pitch black outside. The only light is the cold glow of your laptop screen reflected on the ceiling. Your phone is vibrating like crazy on the nightstand — PagerDuty alerts.",
       "on_enter": "[bold red]Bzzz — bzzz — bzzz —[/bold red]\n\nYour phone won't stop buzzing. A cascade of red alerts floods the screen:\n\n[red]⚠ CRITICAL: prod-db-primary latency > 5000ms\n⚠ CRITICAL: api-gateway timeout rate 78%\n⚠ WARNING: connection pool exhaustion on prod-db-primary\n⚠ CRITICAL: user-facing services degraded[/red]\n\n[dim]3:00 AM. Another on-call night.[/dim]\n\nYou rub your eyes, fumble for the laptop. NovaCorp's production environment just blew up. Again.\n\n[dim]Type [bold]ls[/bold] to look around.[/dim]",
+      "hints": [
+        "There are a few things around you. Check what information you have.",
+        "The phone has alert details. The sticky note has connection info.",
+        "Use cat to read the phone and sticky note, then ssh prod-bastion to connect."
+      ],
       "items": [
         {
           "name": "laptop",
@@ -54,6 +59,11 @@
       "ascii_art": "server_room.txt",
       "description": "[green]{player_name}@prod-bastion:~$[/green]\n\nYou're on NovaCorp's production bastion. The database latency alerts keep rolling in. You need to dig through the logs and find the root cause.",
       "on_enter": "[bold]You've logged into the production bastion.[/bold]\n\nRed alerts scroll endlessly in the terminal. On the Grafana dashboard, the database latency curve spikes like a flatline going haywire.\n\n[red]ALERT: prod-db-primary connections: 923/100 (CRITICAL)\nALERT: api-gateway error rate: 82%[/red]\n\n[dim]The log files should tell you what's going wrong.[/dim]",
+      "hints": [
+        "The log files hold the clues. Read them one by one, watch for repeating keywords.",
+        "user-sync is the problem service. Try grepping for interesting keywords.",
+        "After reading the logs, ssh code-review to check the code change history."
+      ],
       "items": [
         {
           "name": "db-connections.log",
@@ -130,6 +140,11 @@
       "ascii_art": "code_review.png",
       "description": "[green]{player_name}@code-review:~$[/green]\n\nYou're on the code review server. From here you can access Chen Mo's full commit history, his code audit notes, and the complete changelog for [bold cyan]@nova/geo-core[/bold cyan] — the core dependency at the center of this.",
       "on_enter": "[bold]You've entered the code review environment.[/bold]\n\nBefore he vanished, Chen Mo was auditing a core dependency: [bold cyan]@nova/geo-core[/bold cyan].\nThis geolocation library is used by over 300 of NovaCorp's government and enterprise clients.\n\n[dim]What did he find before he vanished?[/dim]",
+      "hints": [
+        "Chen Mo's audit notes and the commit history are both worth reading carefully.",
+        "The encrypted file needs a key. The audit notes mention a clue — the name of the first service where anomalies were found.",
+        "Use decrypt chenmo-encrypted.gpg geo-core to unlock the notes, then ssh vault-internal."
+      ],
       "items": [
         {
           "name": "chenmo-audit.md",
@@ -223,6 +238,11 @@
       "ascii_art": "encrypted_terminal.txt",
       "description": "[green]{player_name}@vault-internal:~$[/green]\n\nThe forensics server. Complete Git signature database, SSH key registry, and server access logs.\nChen Mo told you to run git blame here to unmask the attacker.\n\n[red]Countdown: less than 5 hours until the backdoor triggers.[/red]",
       "on_enter": "[bold]You're inside the forensics server.[/bold]\n\nIt's quiet in here. Just the low hum of cooling fans.\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ Current time: 03:42 AM\n  ⏰ Backdoor triggers: 08:00 AM\n  ⏰ Time remaining: 4 hours 18 minutes\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[dim]Somewhere in here is the name behind that SSH fingerprint.[/dim]",
+      "hints": [
+        "The files here will tell you who planted the backdoor. Read them all.",
+        "git-blame has the signature, ssh-registry maps fingerprints to people. Compare them.",
+        "After reading ssh-registry.txt, cat local-ssh-key.txt to trigger the next scene."
+      ],
       "items": [
         {
           "name": "git-blame.txt",
@@ -302,6 +322,11 @@
       "ascii_art": "final_message.txt",
       "description": "Your terminal. Your command history. Your SSH key. Your IP address. Your hostname.\n\nAll evidence points to the same person.",
       "on_enter": "[bold red]You sit in the dark, staring at the screen.[/bold red]\n\nThe clues rearrange themselves in your head —\n\nPoisoned commit b8e224f. 3:47 AM.\nSSH signature: your key.\nServer logs: your username, your IP, your hostname.\n\nYou have no memory of that night.\n\n[bold yellow]Then you reread Chen Mo's variable names. And everything shifts.[/bold yellow]\n\n[dim]Those variable names Chen Mo left... maybe you've been reading them wrong this whole time.[/dim]",
+      "hints": [
+        "All evidence points to the same person. Reread every clue Chen Mo left.",
+        "Your command history and the event timeline reveal the full picture.",
+        "After reading everything, cat final_message.txt for the last message."
+      ],
       "items": [
         {
           "name": "reinterpretation.txt",
@@ -365,6 +390,9 @@
       "ascii_art": "final_message.txt",
       "description": "A single line blinks on the screen.",
       "on_enter": "[bold red]The terminal screen flickers violently.[/bold red]\n\nEvery window closes at once.\n\nThe screen goes black.\n\nThen, one line fades in:\n\n\n[bold red]\"Do you remember now?\"[/bold red]\n\n\n[dim]......[/dim]\n\n[dim]......[/dim]\n\n[dim]......[/dim]\n\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n  [dim]⏰ Current time: 03:58 AM[/dim]\n  [dim]⏰ Full backdoor trigger: 08:00 AM[/dim]\n  [dim]⏰ Time remaining: 4 hours 2 minutes[/dim]\n\n  [dim]Affected users: 2,340,000[/dim]\n  [dim]Data already leaked: 412,000 real-time location records[/dim]\n  [dim]Export still in progress...[/dim]\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n\nYou're sitting in your bedroom at 4 AM.\n\nThe cold glow of the laptop screen on your face.\n\nYou know the truth now. The attacker is you.\nYou don't remember doing any of it, but evidence doesn't lie.\n\nChen Mo tried to stop you. Then Chen Mo vanished.\n\nNow you have two choices:\nStop the backdoor before it fully triggers — and admit everything.\nOr close the laptop and go back to sleep.\n\nYou choose to sit still.\n\nBecause you're not sure —\nif you fall asleep again, whether you'll wake up as the same person.\n\n\n[bold]End of Chapter 1.[/bold]\n\n\n[dim cyan]>>> SIGNAL LOST <<<[/dim cyan]\n\n[dim]Type [bold]wake[/bold] to continue to Chapter 2, or [bold]quit[/bold] to exit the game.[/dim]",
+      "hints": [
+        "Chapter 1 ends here. Type wake to start Chapter 2, or quit to exit."
+      ],
       "items": [],
       "commands": {
         "wake": {

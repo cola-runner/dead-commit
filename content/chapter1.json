@@ -7,6 +7,11 @@
       "ascii_art": "locked_room.txt",
       "description": "凌晨三点的卧室。窗外一片漆黑，只有笔记本屏幕的冷光映在天花板上。手机在床头柜上疯狂震动——PagerDuty 告警。",
       "on_enter": "[bold red]嗡——嗡——嗡——[/bold red]\n\n你被手机震醒了。屏幕上跳出一连串红色告警：\n\n[red]⚠ CRITICAL: prod-db-primary latency > 5000ms\n⚠ CRITICAL: api-gateway timeout rate 78%\n⚠ WARNING: connection pool exhaustion on prod-db-primary\n⚠ CRITICAL: user-facing services degraded[/red]\n\n[dim]凌晨 3:00 AM。又是 on-call 的夜晚。[/dim]\n\n你揉了揉眼睛，摸索着打开笔记本。NovaCorp 的生产环境又炸了。\n\n[dim]输入 [bold]ls[/bold] 看看周围有什么。[/dim]",
+      "hints": [
+        "周围有几样东西。先看看手上有什么信息。",
+        "手机上有告警详情，便签上有连接信息。",
+        "用 cat 查看手机和便签，然后 ssh prod-bastion 连接服务器。"
+      ],
       "items": [
         {
           "name": "笔记本",
@@ -54,6 +59,11 @@
       "ascii_art": "server_room.txt",
       "description": "[green]{player_name}@prod-bastion:~$[/green]\n\n你现在在 NovaCorp 的生产跳板机上。数据库延迟告警还在持续。你需要查日志找到根因。",
       "on_enter": "[bold]你登录了生产跳板机。[/bold]\n\n终端里不断刷新着红色告警。Grafana 仪表盘上，数据库延迟曲线像心电图一样剧烈跳动。\n\n[red]ALERT: prod-db-primary connections: 923/100 (CRITICAL)\nALERT: api-gateway error rate: 82%[/red]\n\n[dim]日志文件里一定有线索。[/dim]",
+      "hints": [
+        "日志文件里藏着线索。逐个读，注意重复出现的关键词。",
+        "user-sync 服务有问题。grep 一些关键词看看能找到什么。",
+        "看完日志后，ssh code-review 去查代码变更历史。"
+      ],
       "items": [
         {
           "name": "db-connections.log",
@@ -130,6 +140,11 @@
       "ascii_art": "code_review.png",
       "description": "[green]{player_name}@code-review:~$[/green]\n\n你在代码审查服务器上。这里可以查看陈默的完整提交历史、代码审计笔记，以及 @nova/geo-core 这个核心依赖库的所有变更记录。",
       "on_enter": "[bold]你进入了代码审查环境。[/bold]\n\n陈默失联前，他一直在审计一个核心依赖库：[bold cyan]@nova/geo-core[/bold cyan]。\n这个地理位置服务库被 NovaCorp 的 300 多个政企客户使用。\n\n[dim]他发现了什么？[/dim]",
+      "hints": [
+        "陈默的审计笔记和提交记录都值得仔细看。",
+        "加密文件需要密钥。审计笔记里提到了密钥线索——第一个发现异常的服务名。",
+        "用 decrypt chenmo-encrypted.gpg geo-core 解密笔记，然后 ssh vault-internal。"
+      ],
       "items": [
         {
           "name": "chenmo-audit.md",
@@ -224,6 +239,11 @@
       "ascii_art": "encrypted_terminal.txt",
       "description": "[green]{player_name}@vault-internal:~$[/green]\n\n取证服务器。这里有完整的 Git 签名数据库、SSH key 注册表和服务器访问日志。\n陈默让你在这里运行 git blame 来揭露投毒者的身份。\n\n[red]倒计时：距离后门触发还有不到 5 小时。[/red]",
       "on_enter": "[bold]你进入了取证服务器。[/bold]\n\n服务器很安静。风扇低沉地嗡嗡作响。\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：03:42 AM\n  ⏰ 后门触发：08:00 AM\n  ⏰ 剩余时间：4 小时 18 分钟\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[dim]那个 SSH fingerprint 的主人就是投毒者。答案一定在这些数据里。[/dim]",
+      "hints": [
+        "这里的文件会告诉你投毒者是谁。逐个看。",
+        "git-blame 有签名信息，ssh-registry 有密钥归属。对比一下。",
+        "看完 ssh-registry.txt 后，cat local-ssh-key.txt 会触发剧情推进。"
+      ],
       "items": [
         {
           "name": "git-blame.txt",
@@ -303,6 +323,11 @@
       "ascii_art": "final_message.txt",
       "description": "你的终端。你的命令历史。你的 SSH key。你的 IP 地址。你的主机名。\n\n所有证据都指向同一个人。",
       "on_enter": "[bold red]你坐在黑暗中，盯着屏幕。[/bold red]\n\n所有的线索在你脑中重新排列——\n\n投毒提交 b8e224f，凌晨 3:47。\nSSH 签名：你的 key。\n服务器日志：你的用户名，你的 IP，你的主机名。\n\n你没有那天晚上的记忆。\n\n[bold yellow]然后你重新理解了陈默代码里的那些变量名。[/bold yellow]\n\n[dim]陈默代码里的那些变量名……现在看来意味着完全不同的东西。\n而你自己的命令历史……你敢看吗？[/dim]",
+      "hints": [
+        "所有证据指向了同一个人。重新审视陈默留下的每一条线索。",
+        "你的命令历史和事件时间线会揭示完整的真相。",
+        "读完所有文件后，cat final_message.txt 看最后的消息。"
+      ],
       "items": [
         {
           "name": "reinterpretation.txt",
@@ -366,6 +391,9 @@
       "ascii_art": "final_message.txt",
       "description": "屏幕上只剩下一行字在闪烁。",
       "on_enter": "[bold red]终端屏幕剧烈闪烁。[/bold red]\n\n所有窗口同时关闭。\n\n屏幕变黑。\n\n然后，一行字缓缓出现：\n\n\n[bold red]「你终于想起来了吗？」[/bold red]\n\n\n[dim]......[/dim]\n\n[dim]......[/dim]\n\n[dim]......[/dim]\n\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n  [dim]⏰ 当前时间：03:58 AM[/dim]\n  [dim]⏰ 后门全面触发：08:00 AM[/dim]\n  [dim]⏰ 剩余时间：4 小时 2 分钟[/dim]\n\n  [dim]受影响用户：2,340,000 人[/dim]\n  [dim]已泄露数据：412,000 条实时位置记录[/dim]\n  [dim]数据仍在导出中......[/dim]\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n\n你坐在凌晨四点的卧室里。\n\n笔记本屏幕的冷光映在你脸上。\n\n你知道了真相。投毒者是你自己。\n你不记得自己做过什么，但证据不会说谎。\n\n陈默试图阻止你。然后陈默消失了。\n\n现在你有两个选择：\n在后门全面触发前阻止它——等于承认一切。\n或者关上笔记本，回去睡觉。\n\n你选择了坐着不动。\n\n因为你不确定——\n如果再一次醒来，自己还是不是同一个人。\n\n\n[bold]第一章完。[/bold]\n\n\n[dim cyan]>>> 信号已中断 <<<[/dim cyan]\n\n[dim]输入 [bold]wake[/bold] 继续第二章，或 [bold]quit[/bold] 退出游戏。[/dim]",
+      "hints": [
+        "第一章到此结束。输入 wake 开始第二章，或 quit 退出。"
+      ],
       "items": [],
       "commands": {
         "wake": {

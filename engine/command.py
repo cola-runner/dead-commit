@@ -71,6 +71,8 @@ def parse_command(
         return CommandResult(message="[red]错误：没有当前场景。[/red]")
 
     # Built-in commands
+    if cmd == "hint":
+        return _cmd_hint(scene, scene_mgr)
     if cmd == "help":
         return _cmd_help(scene_mgr)
     if cmd == "ls":
@@ -189,6 +191,21 @@ def parse_command(
     return CommandResult(message=unknown)
 
 
+def _cmd_hint(scene, scene_mgr: SceneManager) -> CommandResult:
+    en = scene_mgr.lang == "en"
+    if not scene.hints:
+        msg = "[dim]No hints available for this scene.[/dim]" if en else "[dim]当前场景没有提示。[/dim]"
+        return CommandResult(message=msg)
+    hint = scene.hints[min(scene.hint_index, len(scene.hints) - 1)]
+    remaining = max(0, len(scene.hints) - scene.hint_index - 1)
+    scene.hint_index += 1
+    if remaining > 0:
+        suffix = f"\n[dim]({remaining} more hint{'s' if remaining > 1 else ''} available)[/dim]" if en else f"\n[dim]（还有 {remaining} 条提示）[/dim]"
+    else:
+        suffix = "\n[dim](No more hints.)[/dim]" if en else "\n[dim]（没有更多提示了）[/dim]"
+    return CommandResult(message=f"[yellow]{hint}[/yellow]{suffix}")
+
+
 def _cmd_help(scene_mgr: SceneManager) -> CommandResult:
     en = scene_mgr.lang == "en"
     if en:
@@ -200,6 +217,7 @@ def _cmd_help(scene_mgr: SceneManager) -> CommandResult:
             "  [cyan]take <item>[/cyan]   - Pick up an item",
             "  [cyan]use <item> [target][/cyan] - Use an item",
             "  [cyan]bag[/cyan]           - View inventory",
+            "  [cyan]hint[/cyan]          - Get a hint (if you're stuck)",
             "  [cyan]help[/cyan]          - Show this help",
         ]
         if scene_mgr.has_flag("unlock_advanced"):
@@ -225,6 +243,7 @@ def _cmd_help(scene_mgr: SceneManager) -> CommandResult:
             "  [cyan]take <物品>[/cyan] - 拾取物品",
             "  [cyan]use <物品> [目标][/cyan] - 使用道具",
             "  [cyan]bag[/cyan]         - 查看背包",
+            "  [cyan]hint[/cyan]        - 获取提示（卡住时使用）",
             "  [cyan]help[/cyan]        - 显示本帮助",
         ]
         if scene_mgr.has_flag("unlock_advanced"):
