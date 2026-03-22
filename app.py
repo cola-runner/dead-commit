@@ -44,8 +44,12 @@ def load_scene_pixels(art_filename: str) -> Pixels | None:
         return None
 
     img = Image.open(png_path)
-    # Use full terminal width; half-block chars double vertical resolution
-    # so we render at (width, height/2) to fill the panel
+    # Scale image to fit typical terminal width (80 cols)
+    # Each pixel becomes a half-block char, so we target ~80 cols wide
+    target_width = 80
+    aspect = img.height / img.width
+    target_height = int(target_width * aspect)
+    img = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
     return Pixels.from_image(img)
 
 
