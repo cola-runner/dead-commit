@@ -7,6 +7,11 @@
       "ascii_art": "bedroom.png",
       "description": "Your bedroom at 5:30 AM. You fell asleep at your desk. The laptop screen shows commands you don't remember typing. A pale gray light seeps through the window.",
       "on_enter": "[bold]You're awake.[/bold]\n\nYour neck is killing you — you passed out at your desk. Outside, the sky is a dull gray.\n\nThe laptop clock reads [bold]05:30 AM[/bold].\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ Current time: 05:30 AM\n  ⏰ Full backdoor trigger: 08:00 AM\n  ⏰ Time remaining: 2 hours 30 minutes\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\nYou stare at the screen. The terminal has new lines you don't remember typing:\n\n[red]$ ~/.shadow/tunnel.sh\ntunnel established: 10.20.1.88 → 203.0.113.42:8443\nheartbeat: OK\nexport resumed at 03:01 AM[/red]\n\n[bold yellow]While you were asleep, your machine executed something.[/bold yellow]\n\n[dim]Your phone is buzzing. Start with [bold]ls[/bold].[/dim]",
+      "hints": [
+        "You don't remember what happened last night. Look around for clues.",
+        "The phone has new messages. The laptop shows commands you don't remember. Try crontab.",
+        "After checking crontab, ssh localhost to enter the hidden directory."
+      ],
       "items": [
         {
           "name": "phone",
@@ -75,14 +80,18 @@
         "ssh_localhost": {
           "trigger": "ssh_localhost",
           "message": "[green]$ ssh localhost\nConnecting to localhost...\nAuthenticated.\n\n{player_name}@localhost:~/.shadow$[/green]\n\nYou're inside a hidden directory on your own machine.\n\n[bold yellow]It feels like breaking into a stranger's computer — except this computer is yours.[/bold yellow]",
-          "requires_flags": ["found_crontab"],
+          "requires_flags": [
+            "found_crontab"
+          ],
           "requires_items": [],
           "target_scene": "shadow"
         },
         "ssh_shadow": {
           "trigger": "ssh_shadow",
           "message": "[green]$ cd ~/.shadow/\n{player_name}@localhost:~/.shadow$[/green]\n\nYou're inside the hidden directory.",
-          "requires_flags": ["found_crontab"],
+          "requires_flags": [
+            "found_crontab"
+          ],
           "requires_items": [],
           "target_scene": "shadow"
         },
@@ -106,6 +115,11 @@
       "ascii_art": "supply_chain.png",
       "description": "[green]{player_name}@localhost:~/.shadow$[/green]\n\nYou're in a hidden directory on your own machine. Created on 2025-12-17 — the day before the backdoor code was committed.\n\n[dim]Use [bold]ls[/bold] to see what's here.[/dim]",
       "on_enter": "[bold]You've entered ~/.shadow/.[/bold]\n\n[dim]$ ls -la ~/.shadow/[/dim]\n[dim]drwx------  .shadow/    created 2025-12-17 23:30[/dim]\n[cyan]  tunnel.sh\n  heartbeat.py\n  handler-msg.log\n  journal.gpg\n  .identity[/cyan]\n\nFive files. You don't remember creating any of them.\n\n[dim]Read them one by one with [bold]cat[/bold].[/dim]",
+      "hints": [
+        "Every file in this directory was created without your knowledge. Read them all.",
+        "heartbeat.py reveals the remote control mechanism. handler-msg.log has the full communication log.",
+        "journal.gpg needs decrypting. The key hint is in the file header — current AGENT protocol status. Use decrypt journal.gpg ACTIVE"
+      ],
       "items": [
         {
           "name": "tunnel.sh",
@@ -122,7 +136,7 @@
         {
           "name": "handler-msg.log",
           "description": "Communication log with SHEPHERD control node",
-          "content": "[green]$ cat handler-msg.log[/green]\n\n[bold]SHEPHERD Protocol - Secure Channel Log[/bold]\n[dim]Agent: {player_name}@{player_name}-MacBook.local[/dim]\n\n[dim]--- 2025-12-17 ---[/dim]\n[cyan][23:30] SHEPHERD → AGENT:[/cyan] Deployment complete. tunnel + heartbeat installed. First handshake tomorrow at 03:00.\n[dim][23:31] AGENT → SHEPHERD:[/dim] Confirmed.\n\n[dim]--- 2025-12-18 ---[/dim]\n[dim][03:45] SHEPHERD → AGENT:[/dim] Begin mission. Target: geo-core v2.8.1. Inject payload.\n[cyan][03:50] AGENT → SHEPHERD:[/cyan] Code committed. commit b8e224f. Author scrubbed.\n[dim][03:51] SHEPHERD → AGENT:[/dim] Copy. Going dormant. Next window: on-demand.\n\n[dim]--- 2025-12-19 ---[/dim]\n[cyan][01:12] SHEPHERD → AGENT:[/cyan] NovaPilot passed the review. Flagged as low risk, no human follow-up. The rules are designed this way — security patches skip manual review. Everything is on track.\n\n[dim]--- 2026-03-14 ---[/dim]\n[red][23:15] SHEPHERD → AGENT:[/red] Warning: Chen Mo is auditing geo-core. He found the trigger. Handle it.\n[dim][23:16] AGENT → SHEPHERD:[/dim] Copy. Awaiting instructions.\n[red][23:20] SHEPHERD → AGENT:[/red] Delete his original audit notes. Don't harm him — just buy us 72 hours.\n\n[dim]--- 2026-03-15 ---[/dim]\n[dim][02:08] AGENT → SHEPHERD:[/dim] Logged into vault-internal. Deleted chenmo-original-notes.txt.\n[cyan][02:20] SHEPHERD → AGENT:[/cyan] He made a backup, but it doesn't matter. Launch window is in 72 hours.\n[red][14:30] SHEPHERD → AGENT:[/red] Chen Mo hid markers in a PR. Let him go. In 72 hours none of this matters.\n\n[dim]--- 2026-03-17 ---[/dim]\n[red][23:45] SHEPHERD → AGENT:[/red] Final confirmation. Full export at 08:00 tomorrow. Do not intervene. Everything proceeds as planned.\n\n[bold red]Now you see the full conversation.\n\nYou didn't commit a crime — SHEPHERD remotely controlled your machine through heartbeat.py,\nexecuting commands while you slept. Your \"criminal record\" is the product of remote manipulation.[/bold red]\n\n[bold yellow]But who is SHEPHERD?\nAll communications went through an encrypted tunnel. The real identity is hidden.[/bold yellow]\n\n[dim]The journal journal.gpg might have more clues. Try [bold]decrypt journal.gpg[/bold][/dim]",
+          "content": "[green]$ cat handler-msg.log[/green]\n\n[bold]SHEPHERD Protocol - Secure Channel Log[/bold]\n[dim]Agent: {player_name}@{player_name}-MacBook.local[/dim]\n\n[dim]--- 2025-12-17 ---[/dim]\n[cyan][23:30] SHEPHERD → AGENT:[/cyan] Deployment complete. tunnel + heartbeat installed. First handshake tomorrow at 03:00.\n[dim][23:31] AGENT → SHEPHERD:[/dim] Confirmed.\n\n[dim]--- 2025-12-18 ---[/dim]\n[dim][03:45] SHEPHERD → AGENT:[/dim] Begin mission. Target: geo-core v2.8.1. Inject payload.\n[cyan][03:50] AGENT → SHEPHERD:[/cyan] Code committed. commit b8e224f. Author scrubbed.\n[dim][03:51] SHEPHERD → AGENT:[/dim] Copy. Going dormant. Next window: on-demand.\n[cyan][04:15] SHEPHERD → AGENT:[/cyan] NovaPilot passed the review. Flagged as low risk, no human follow-up. The rules are designed this way — security patches skip manual review. Everything is on track.\n\n[dim]--- 2026-03-14 ---[/dim]\n[red][23:15] SHEPHERD → AGENT:[/red] Warning: Chen Mo is auditing geo-core. He found the trigger. Handle it.\n[dim][23:16] AGENT → SHEPHERD:[/dim] Copy. Awaiting instructions.\n[red][23:20] SHEPHERD → AGENT:[/red] Delete his original audit notes. Don't harm him — just buy us 72 hours.\n\n[dim]--- 2026-03-15 ---[/dim]\n[dim][02:08] AGENT → SHEPHERD:[/dim] Logged into vault-internal. Deleted chenmo-original-notes.txt.\n[cyan][02:20] SHEPHERD → AGENT:[/cyan] He made a backup, but it doesn't matter. Launch window is in 72 hours.\n[red][14:30] SHEPHERD → AGENT:[/red] Chen Mo hid markers in a PR. Let him go. In 72 hours none of this matters.\n\n[dim]--- 2026-03-17 ---[/dim]\n[red][23:45] SHEPHERD → AGENT:[/red] Final confirmation. Full export at 08:00 tomorrow. Do not intervene. Everything proceeds as planned.\n\n[bold red]Now you see the full conversation.\n\nYou didn't commit a crime — SHEPHERD remotely controlled your machine through heartbeat.py,\nexecuting commands while you slept. Your \"criminal record\" is the product of remote manipulation.[/bold red]\n\n[bold yellow]But who is SHEPHERD?\nAll communications went through an encrypted tunnel. The real identity is hidden.[/bold yellow]\n\n[dim]The journal journal.gpg might have more clues. Try [bold]decrypt journal.gpg[/bold][/dim]",
           "takeable": false
         },
         {
@@ -228,7 +242,9 @@
         "ssh_prod-bastion": {
           "trigger": "ssh_prod-bastion",
           "message": "[green]$ ssh prod-bastion\nConnecting to prod-bastion.novacorp.internal...\nAuthenticated.\n\n{player_name}@prod-bastion:~$[/green]\n\nYou're back on the production server.\n\n[bold yellow]This time you're not here to debug. You're here to defuse a bomb.[/bold yellow]",
-          "requires_flags": ["decrypted_journal"],
+          "requires_flags": [
+            "decrypted_journal"
+          ],
           "requires_items": [],
           "target_scene": "emergency"
         }
@@ -240,6 +256,11 @@
       "ascii_art": "prod_server.png",
       "description": "[green]{player_name}@prod-bastion:~$[/green]\n\nYou're back on the production server. Last time you were here to investigate. This time you're here to stop everything.\n\n[red]Current time: 06:15 AM | Full backdoor trigger: 08:00 AM | Remaining: 1 hour 45 minutes[/red]",
       "on_enter": "[bold]You've logged back into the production bastion.[/bold]\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ Current time: 06:15 AM\n  ⏰ Full backdoor trigger: 08:00 AM\n  ⏰ Time remaining: 1 hour 45 minutes\n  📊 Data leaked: 1,247,000 / 2,340,000\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\nThe journal said Chen Mo's PR #1847 contains the emergency shutdown key.\nYou need to find it.\n\n[dim]Start with [bold]ps[/bold] to check running processes.\nUse [bold]ls[/bold] to see available logs and files.[/dim]",
+      "hints": [
+        "Chen Mo's emergency plan is here. Read each file carefully.",
+        "The killswitch needs decrypting. The key is made from three keywords — recall the variables in Chen Mo's code.",
+        "The key is truecannot leave12 (helpMe=true, trapped=cannot leave, floor12=12). decrypt killswitch.enc truecannot leave12"
+      ],
       "items": [
         {
           "name": "geo-export.log",
@@ -373,7 +394,9 @@
         "ssh_deploy-terminal": {
           "trigger": "ssh_deploy-terminal",
           "message": "[green]$ ssh deploy-terminal\nConnecting to deploy-terminal.novacorp.internal...\n\n⚠  PRODUCTION DEPLOYMENT NODE\n⚠  All operations require SSH key signature.\n⚠  All deployments are logged and audited.\n\nAuthenticated.\n{player_name}@deploy-terminal:~$[/green]\n\nYou're on the deployment terminal. From here, you can execute the killswitch.\n\n[bold red]Every operation here is logged. Your signature will be in the record.[/bold red]",
-          "requires_flags": ["decrypted_killswitch"],
+          "requires_flags": [
+            "decrypted_killswitch"
+          ],
           "requires_items": [],
           "target_scene": "defuse"
         }
@@ -385,6 +408,10 @@
       "ascii_art": "code_review.png",
       "description": "[green]{player_name}@deploy-terminal:~$[/green]\n\nThe deployment terminal. You have the killswitch script. Run it and the backdoor dies.\nBut your SSH signature will be on the record forever.",
       "on_enter": "[bold]You're on the deployment terminal.[/bold]\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ Current time: 07:30 AM\n  ⏰ Full backdoor trigger: 08:00 AM\n  ⏰ Time remaining: 30 minutes\n  📊 Data leaked: 1,890,000 / 2,340,000 (80.8%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[bold red]80% of the data is gone. Out of 2.34 million people, 1.89 million have had their real-time locations leaked.\nAnother 406,000 records are hanging by a thread.[/bold red]\n\nYou have Chen Mo's killswitch script.\nExecuting it requires signing a commit with your SSH key.\n\n[dim]Use [bold]ls[/bold] to see available files.\nWhen you're ready, [bold]cat execute.sh[/bold] to review the execution script.[/dim]",
+      "hints": [
+        "Everything is ready. Check the final files to be sure.",
+        "run execute.sh to activate the killswitch. This is irreversible."
+      ],
       "items": [
         {
           "name": "execute.sh",
@@ -469,6 +496,9 @@
       "ascii_art": "the_mirror.png",
       "description": "Execution complete. The numbers on the screen have stopped moving.",
       "on_enter": "[green]$ run execute.sh[/green]\n\n[dim]Setting killswitch environment variable...[/dim]\n[cyan]GEO_EMERGENCY_SHUTDOWN=\"truecannot leave12\"[/cyan]\n\n[dim]Creating signed commit...[/dim]\n[green]$ git commit --allow-empty -S -m \"emergency: activate geo-core killswitch\"\n[main 7a3f1c9] emergency: activate geo-core killswitch\n Signed by: {player_name} (SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE)[/green]\n\n[dim]Restarting geo-core service...[/dim]\n[yellow]$ kubectl rollout restart deployment/geo-core-service\ndeployment.apps/geo-core-service restarted\n\nWaiting for rollout to complete...\n  Pod geo-core-7a3f1c9-xk9mr: Pending...\n  Pod geo-core-7a3f1c9-xk9mr: Running...\n  Pod geo-core-7a3f1c9-xk9mr: Detecting GEO_EMERGENCY_SHUTDOWN...[/yellow]\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n[bold green]  ✓ KILLSWITCH ACTIVATED\n  ✓ Backdoor trigger function: DESTROYED\n  ✓ Export queue: PURGED\n  ✓ geo-export-daemon: TERMINATED (watchdog overridden)\n  ✓ All outbound connections to 203.0.113.42: SEVERED[/bold green]\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n\n[bold]The data export has stopped.[/bold]\n\n\nFinal count:\n[dim]  Total users:      2,340,000[/dim]\n[red]  Leaked:           1,934,000 (82.6%)[/red]\n[green]  Protected:           406,000 (17.4%)[/green]\n\n[dim]You couldn't save everyone. 1.93 million people's real-time location data made it to an overseas server.\nBut 406,000 records were saved — including emergency vehicle dispatch data for Renji Hospital.[/dim]\n\n\nOutside, the sky is bright.\n\nYour phone buzzes.\n\n[yellow]Text - Unknown number 07:59 AM:\nThank you.\n— Chen Mo[/yellow]\n\n\nThen another message comes in:\n\n[red]Slack DM - Zhao Ming 07:59 AM:\n{player_name}, the deploy log shows you just restarted geo-core.\nAnd your SSH key signature is on a very interesting commit.\n\nWe need to talk.\n\nDon't bother coming to the conference room at 9.\nCome to my office.\nNow.[/red]\n\n\n[dim]......[/dim]\n\n\nYou close the laptop.\nStand up.\nGlance out the window — morning sunlight hits the building across the street.\n\nYou grab your phone, grab your keys, and open the door.\n\nFor the first time, you walk out of this room wide awake.\n\n\n[bold]End of Chapter 2.[/bold]\n\n\n[dim cyan]>>> Signal reconnecting...... <<<[/dim cyan]\n[dim cyan]>>> SHEPHERD's identity remains unknown. <<<[/dim cyan]\n[dim cyan]>>> Where is Chen Mo? <<<[/dim cyan]\n[dim cyan]>>> Chapter 3 coming soon...... <<<[/dim cyan]\n\n\n[bold]Thanks for playing DEAD COMMIT — Chapter 2[/bold]\n[dim]Type [bold]quit[/bold] to exit the game.[/dim]",
+      "hints": [
+        "End of Chapter 2. Type quit to exit."
+      ],
       "items": [],
       "commands": {},
       "transitions": {}
@@ -479,6 +509,9 @@
       "ascii_art": "the_mirror.png",
       "description": "You did nothing. Time's up.",
       "on_enter": "[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ Current time: 07:55 AM\n  ⏰ Full backdoor trigger: 08:00 AM\n  ⏰ Time remaining: 5 minutes\n  📊 Data leaked: 2,280,000 / 2,340,000 (97.4%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[dim]You sit in the chair, watching the numbers climb.\n\n2,290,000...\n2,310,000...\n2,330,000...[/dim]\n\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ Current time: 08:00 AM\n  📊 Data leaked: 2,340,000 / 2,340,000 (100.0%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[bold red]Export complete.[/bold red]\n\n\nFinal count:\n[dim]  Total users:      2,340,000[/dim]\n[red]  Leaked:           2,340,000 (100%)[/red]\n[green]  Protected:                0 (0%)[/green]\n\n[dim]2.34 million real-time location records. All of them. Gone.\nThree hospitals' emergency dispatch. City bus routes. Ride-share data.\nAll sitting on a foreign server.[/dim]\n\n\n[dim]......[/dim]\n\n\nEverything goes quiet.\nThe data stream stops — not because it was blocked, but because there's nothing left to steal.\n\nYou stare at the blank terminal.\n\nYou had the killswitch. You had the key. You had everything.\nYou could have stopped this.\n\n[bold red]You chose to do nothing.[/bold red]\n\n\n[dim]......[/dim]\n\n\nYour phone buzzes.\n\n[yellow]Text - Unknown number 08:03 AM:\nWe found the full evidence chain for the backdoor.\nYour SSH key signature is on commit b8e224f.\nBut what about the killswitch? Chen Mo said you'd execute it.\n\n...You didn't?\n\n— Mo Ran[/yellow]\n\n\nThen another message:\n\n[red]Slack DM - Zhao Ming 08:05 AM:\n{player_name}, the security team finished the traffic analysis.\nYour machine is the source of the data exfiltration. Your SSH key signed that commit.\n\nLegal and HR have been notified.\nPolice are on the way.\n\nDon't run.[/red]\n\n\n[dim]Footsteps outside your door.\n\nYou can explain that you're innocent. You can say you were being controlled.\nBut 2.34 million records are gone — all of them.\nThere's no killswitch execution in the logs to prove you tried to stop it.\nThere's no evidence you did anything at all.\n\nBecause you didn't.[/dim]\n\n\n[bold red]You lost everything. Not because SHEPHERD controlled you. Because you were wide awake and chose to do nothing.[/bold red]\n\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n[bold red]                  BAD END[/bold red]\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n\n[dim]Type [bold]quit[/bold] to exit the game.\nType [bold]restart[/bold] to start Chapter 2 over.\n\nMaybe this time, you'll make a different choice.[/dim]",
+      "hints": [
+        "You chose silence. Type quit to exit."
+      ],
       "items": [],
       "commands": {
         "restart": {

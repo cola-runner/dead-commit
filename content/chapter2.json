@@ -7,6 +7,11 @@
       "ascii_art": "bedroom.png",
       "description": "凌晨 5:30 的卧室。你趴在桌上不知睡了多久。笔记本屏幕上多了几行你不记得输入过的命令。窗外微微泛白。",
       "on_enter": "[bold]你醒了。[/bold]\n\n脖子酸痛——你趴在桌上不知道睡了多久。口腔干涩。窗外灰蒙蒙地亮了一点。\n\n笔记本屏幕上，时钟显示 [bold]05:30 AM[/bold]。\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：05:30 AM\n  ⏰ 后门全面触发：08:00 AM\n  ⏰ 剩余时间：2 小时 30 分钟\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n你盯着屏幕。\n\n终端上多了几行命令——你不记得输入过的命令：\n\n[red]$ ~/.shadow/tunnel.sh\ntunnel established: 10.20.1.88 → 203.0.113.42:8443\nheartbeat: OK\nexport resumed at 04:05 AM[/red]\n\n[bold yellow]你睡着的时候，你的机器在运行什么东西。\n一个你从没见过的目录。一个你从没执行过的脚本。[/bold yellow]\n\n手机在桌上震个不停。\n\n[dim]先 [bold]ls[/bold] 看看周围。[/dim]",
+      "hints": [
+        "你不记得昨晚做了什么。周围的东西可能有线索。",
+        "手机上有新消息，笔记本上有你不记得的命令。crontab 命令也许有发现。",
+        "查看 crontab 后，ssh localhost 进入隐藏目录。"
+      ],
       "items": [
         {
           "name": "手机",
@@ -75,14 +80,18 @@
         "ssh_localhost": {
           "trigger": "ssh_localhost",
           "message": "[green]$ ssh localhost\nConnecting to localhost...\nAuthenticated.\n\n{player_name}@localhost:~/.shadow$[/green]\n\n你进入了自己机器上的隐藏目录。\n\n[bold yellow]这就像潜入一个陌生人的电脑——但这台电脑是你自己的。[/bold yellow]",
-          "requires_flags": ["found_crontab"],
+          "requires_flags": [
+            "found_crontab"
+          ],
           "requires_items": [],
           "target_scene": "shadow"
         },
         "ssh_shadow": {
           "trigger": "ssh_shadow",
           "message": "[green]$ cd ~/.shadow/\n{player_name}@localhost:~/.shadow$[/green]\n\n你进入了隐藏目录。",
-          "requires_flags": ["found_crontab"],
+          "requires_flags": [
+            "found_crontab"
+          ],
           "requires_items": [],
           "target_scene": "shadow"
         },
@@ -106,6 +115,11 @@
       "ascii_art": "supply_chain.png",
       "description": "[green]{player_name}@localhost:~/.shadow$[/green]\n\n你在自己机器的隐藏目录里。这个目录创建于 2025-12-17——提交后门代码的前一天。\n\n[dim]用 [bold]ls[/bold] 看看这里有什么。[/dim]",
       "on_enter": "[bold]你进入了 ~/.shadow/ 目录。[/bold]\n\n[dim]$ ls -la ~/.shadow/[/dim]\n[dim]drwx------  .shadow/    created 2025-12-17 23:30[/dim]\n[cyan]  tunnel.sh\n  heartbeat.py\n  handler-msg.log\n  journal.gpg\n  .identity[/cyan]\n\n一共五个文件。每一个都是你不记得创建的。\n\n[dim]逐个 [bold]cat[/bold] 查看。[/dim]",
+      "hints": [
+        "这个目录里的每个文件都是你不记得创建的。逐个看。",
+        "heartbeat.py 揭示了远程控制机制。handler-msg.log 有完整通信记录。",
+        "journal.gpg 需要解密。密钥线索在文件头部注释里——当前 AGENT 协议状态。用 decrypt journal.gpg ACTIVE"
+      ],
       "items": [
         {
           "name": "tunnel.sh",
@@ -122,7 +136,7 @@
         {
           "name": "handler-msg.log",
           "description": "与控制端 SHEPHERD 的通信记录",
-          "content": "[green]$ cat handler-msg.log[/green]\n\n[bold]SHEPHERD Protocol - Secure Channel Log[/bold]\n[dim]Agent: {player_name}@{player_name}-MacBook.local[/dim]\n\n[dim]--- 2025-12-17 ---[/dim]\n[cyan][23:30] SHEPHERD → AGENT:[/cyan] 部署完成。tunnel + heartbeat 已安装。明天 03:00 首次握手。\n[dim][23:31] AGENT → SHEPHERD:[/dim] 确认。\n\n[dim]--- 2025-12-18 ---[/dim]\n[dim][03:45] SHEPHERD → AGENT:[/dim] 开始任务。目标：geo-core v2.8.1。注入 payload。\n[cyan][03:50] AGENT → SHEPHERD:[/cyan] 代码已提交。commit b8e224f。Author 已清除。\n[dim][03:51] SHEPHERD → AGENT:[/dim] 收到。进入休眠。下次窗口：按需激活。\n\n[dim]--- 2025-12-19 ---[/dim]\n[cyan][01:12] SHEPHERD → AGENT:[/cyan] NovaPilot 已通过审查。标记为低风险，无人复核。规则就是这么设计的——安全补丁免人工审查。一切照计划进行。\n\n[dim]--- 2026-03-14 ---[/dim]\n[red][23:15] SHEPHERD → AGENT:[/red] 警告：陈默在审计 geo-core。他发现了 trigger。需要处理。\n[dim][23:16] AGENT → SHEPHERD:[/dim] 收到。等待指令。\n[red][23:20] SHEPHERD → AGENT:[/red] 删除他的原始审计笔记。不要伤害他，只需要拖延 72 小时。\n\n[dim]--- 2026-03-15 ---[/dim]\n[dim][02:08] AGENT → SHEPHERD:[/dim] 已登录 vault-internal。已删除 chenmo-original-notes.txt。\n[cyan][02:20] SHEPHERD → AGENT:[/cyan] 他做了备份，但无关紧要。发射窗口在 72 小时后。\n[red][14:30] SHEPHERD → AGENT:[/red] 陈默在 PR 里藏了标记。让他去吧。72 小时后一切都不重要了。\n\n[dim]--- 2026-03-17 ---[/dim]\n[red][23:45] SHEPHERD → AGENT:[/red] 最终确认。明天 08:00 全量导出。不要干预。一切照计划进行。\n\n[bold red]现在你看到了完整的对话。\n\n你不是主动犯罪——SHEPHERD 通过 heartbeat.py 远程控制你的机器，\n在你睡着时执行命令。你的「犯罪记录」都是远程操控的产物。[/bold red]\n\n[bold yellow]但 SHEPHERD 是谁？\n通信全部通过加密隧道，对方的真实身份被隐藏了。[/bold yellow]\n\n[dim]日记 journal.gpg 可能有更多线索。试试 [bold]decrypt journal.gpg[/bold][/dim]",
+          "content": "[green]$ cat handler-msg.log[/green]\n\n[bold]SHEPHERD Protocol - Secure Channel Log[/bold]\n[dim]Agent: {player_name}@{player_name}-MacBook.local[/dim]\n\n[dim]--- 2025-12-17 ---[/dim]\n[cyan][23:30] SHEPHERD → AGENT:[/cyan] 部署完成。tunnel + heartbeat 已安装。明天 03:00 首次握手。\n[dim][23:31] AGENT → SHEPHERD:[/dim] 确认。\n\n[dim]--- 2025-12-18 ---[/dim]\n[dim][03:45] SHEPHERD → AGENT:[/dim] 开始任务。目标：geo-core v2.8.1。注入 payload。\n[cyan][03:50] AGENT → SHEPHERD:[/cyan] 代码已提交。commit b8e224f。Author 已清除。\n[dim][03:51] SHEPHERD → AGENT:[/dim] 收到。进入休眠。下次窗口：按需激活。\n[cyan][04:15] SHEPHERD → AGENT:[/cyan] NovaPilot 已通过审查。标记为低风险，无人复核。规则就是这么设计的——安全补丁免人工审查。一切照计划进行。\n\n[dim]--- 2026-03-14 ---[/dim]\n[red][23:15] SHEPHERD → AGENT:[/red] 警告：陈默在审计 geo-core。他发现了 trigger。需要处理。\n[dim][23:16] AGENT → SHEPHERD:[/dim] 收到。等待指令。\n[red][23:20] SHEPHERD → AGENT:[/red] 删除他的原始审计笔记。不要伤害他，只需要拖延 72 小时。\n\n[dim]--- 2026-03-15 ---[/dim]\n[dim][02:08] AGENT → SHEPHERD:[/dim] 已登录 vault-internal。已删除 chenmo-original-notes.txt。\n[cyan][02:20] SHEPHERD → AGENT:[/cyan] 他做了备份，但无关紧要。发射窗口在 72 小时后。\n[red][14:30] SHEPHERD → AGENT:[/red] 陈默在 PR 里藏了标记。让他去吧。72 小时后一切都不重要了。\n\n[dim]--- 2026-03-17 ---[/dim]\n[red][23:45] SHEPHERD → AGENT:[/red] 最终确认。明天 08:00 全量导出。不要干预。一切照计划进行。\n\n[bold red]现在你看到了完整的对话。\n\n你不是主动犯罪——SHEPHERD 通过 heartbeat.py 远程控制你的机器，\n在你睡着时执行命令。你的「犯罪记录」都是远程操控的产物。[/bold red]\n\n[bold yellow]但 SHEPHERD 是谁？\n通信全部通过加密隧道，对方的真实身份被隐藏了。[/bold yellow]\n\n[dim]日记 journal.gpg 可能有更多线索。试试 [bold]decrypt journal.gpg[/bold][/dim]",
           "takeable": false
         },
         {
@@ -228,7 +242,9 @@
         "ssh_prod-bastion": {
           "trigger": "ssh_prod-bastion",
           "message": "[green]$ ssh prod-bastion\nConnecting to prod-bastion.novacorp.internal...\nAuthenticated.\n\n{player_name}@prod-bastion:~$[/green]\n\n你重新回到了生产服务器。\n\n[bold yellow]这次不是来排查故障的——是来拆炸弹的。[/bold yellow]",
-          "requires_flags": ["decrypted_journal"],
+          "requires_flags": [
+            "decrypted_journal"
+          ],
           "requires_items": [],
           "target_scene": "emergency"
         }
@@ -240,6 +256,11 @@
       "ascii_art": "prod_server.png",
       "description": "[green]{player_name}@prod-bastion:~$[/green]\n\n你回到了生产服务器。上次来这里是排查故障。这次是来阻止一切。\n\n[red]当前时间：06:15 AM | 后门全面触发：08:00 AM | 剩余：1 小时 45 分钟[/red]",
       "on_enter": "[bold]你重新登录了生产跳板机。[/bold]\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：06:15 AM\n  ⏰ 后门全面触发：08:00 AM\n  ⏰ 剩余时间：1 小时 45 分钟\n  📊 已泄露数据：1,247,000 / 2,340,000\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n日记说陈默的 PR #1847 里藏着紧急关闭密钥。\n你需要找到它。\n\n[dim]先用 [bold]ps[/bold] 看看当前运行的进程。\n用 [bold]ls[/bold] 查看可用日志和文件。[/dim]",
+      "hints": [
+        "陈默的紧急方案就在这里。仔细看每个文件。",
+        "killswitch 需要解密。密钥由三个关键词拼成——回想陈默代码里的变量。",
+        "密钥是 truecannot leave12（helpMe=true, trapped=cannot leave, floor12=12）。decrypt killswitch.enc truecannot leave12"
+      ],
       "items": [
         {
           "name": "geo-export.log",
@@ -373,7 +394,9 @@
         "ssh_deploy-terminal": {
           "trigger": "ssh_deploy-terminal",
           "message": "[green]$ ssh deploy-terminal\nConnecting to deploy-terminal.novacorp.internal...\n\n⚠  PRODUCTION DEPLOYMENT NODE\n⚠  All operations require SSH key signature.\n⚠  All deployments are logged and audited.\n\nAuthenticated.\n{player_name}@deploy-terminal:~$[/green]\n\n你进入了部署终端。从这里可以执行 killswitch。\n\n[bold red]每一个操作都会被记录。你的签名会出现在日志里。[/bold red]",
-          "requires_flags": ["decrypted_killswitch"],
+          "requires_flags": [
+            "decrypted_killswitch"
+          ],
           "requires_items": [],
           "target_scene": "defuse"
         }
@@ -385,6 +408,10 @@
       "ascii_art": "code_review.png",
       "description": "[green]{player_name}@deploy-terminal:~$[/green]\n\n部署终端。你有 killswitch 脚本。执行它就能阻止后门。\n但你的 SSH 签名会永远记录在案。",
       "on_enter": "[bold]你进入了部署终端。[/bold]\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：07:30 AM\n  ⏰ 后门全面触发：08:00 AM\n  ⏰ 剩余时间：30 分钟\n  📊 已泄露数据：1,890,000 / 2,340,000 (80.8%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[bold red]80% 的数据已经流出。234 万人中有 189 万人的实时位置已经泄露。\n还有 45 万人的数据悬在刀刃上。[/bold red]\n\n你手里有陈默的 killswitch 脚本。\n执行它需要用你的 SSH key 签名一个 commit。\n\n[dim]用 [bold]ls[/bold] 查看可用文件。\n准备好了就 [bold]cat execute.sh[/bold] 查看执行脚本。[/dim]",
+      "hints": [
+        "一切准备就绪。检查最后的文件确认万无一失。",
+        "run execute.sh 来执行 killswitch。这是不可逆的。"
+      ],
       "items": [
         {
           "name": "execute.sh",
@@ -469,6 +496,9 @@
       "ascii_art": "the_mirror.png",
       "description": "执行完成。屏幕上的数字停止了跳动。",
       "on_enter": "[green]$ run execute.sh[/green]\n\n[dim]Setting killswitch environment variable...[/dim]\n[cyan]GEO_EMERGENCY_SHUTDOWN=\"truecannot leave12\"[/cyan]\n\n[dim]Creating signed commit...[/dim]\n[green]$ git commit --allow-empty -S -m \"emergency: activate geo-core killswitch\"\n[main 7a3f1c9] emergency: activate geo-core killswitch\n Signed by: {player_name} (SHA256:xK9mR3pQ7vN2sL5wY8tH4jB6fD0gA1cE)[/green]\n\n[dim]Restarting geo-core service...[/dim]\n[yellow]$ kubectl rollout restart deployment/geo-core-service\ndeployment.apps/geo-core-service restarted\n\nWaiting for rollout to complete...\n  Pod geo-core-7a3f1c9-xk9mr: Pending...\n  Pod geo-core-7a3f1c9-xk9mr: Running...\n  Pod geo-core-7a3f1c9-xk9mr: Detecting GEO_EMERGENCY_SHUTDOWN...[/yellow]\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n[bold green]  ✓ KILLSWITCH ACTIVATED\n  ✓ Backdoor trigger function: DESTROYED\n  ✓ Export queue: PURGED\n  ✓ geo-export-daemon: TERMINATED (watchdog overridden)\n  ✓ All outbound connections to 203.0.113.42: SEVERED[/bold green]\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n\n[bold]数据导出停止了。[/bold]\n\n\n最终统计：\n[dim]  总用户数：    2,340,000[/dim]\n[red]  已泄露：      1,934,000 (82.6%)[/red]\n[green]  已保护：        406,000 (17.4%)[/green]\n\n[dim]你没能救所有人。190 万人的实时位置数据已经流出到境外服务器。\n但 40 万人的数据保住了——包括仁济医院的急救车辆调度数据。[/dim]\n\n\n窗外，天已经大亮了。\n\n你的手机震了一下。\n\n[yellow]短信 - 未知号码 07:59 AM：\n谢谢。\n—— 陈默[/yellow]\n\n\n然后，另一条消息进来：\n\n[red]Slack DM - 赵明 07:59 AM：\n{player_name}，deploy log 显示你刚刚重启了 geo-core。\n而且你的 SSH key 签名出现在了一个很有趣的 commit 上。\n\n我们需要谈谈。\n\n9 点不用来会议室了。\n来我办公室。\n现在。[/red]\n\n\n[dim]......[/dim]\n\n\n你合上笔记本。\n站起来。\n看了一眼窗外的天空——清晨的阳光照在对面的楼上。\n\n你拿起手机，拿起钥匙，打开门。\n\n第一次，你清醒地走出了这个房间。\n\n\n[bold]第二章完。[/bold]\n\n\n[dim cyan]>>> 信号正在重新连接...... <<<[/dim cyan]\n[dim cyan]>>> SHEPHERD 的身份仍是未知。<<<[/dim cyan]\n[dim cyan]>>> 陈默在哪里？<<<[/dim cyan]\n[dim cyan]>>> 第三章即将到来...... <<<[/dim cyan]\n\n\n[bold]感谢游玩《DEAD COMMIT》第二章[/bold]\n[dim]输入 [bold]quit[/bold] 退出游戏。[/dim]",
+      "hints": [
+        "第二章结束。输入 quit 退出游戏。"
+      ],
       "items": [],
       "commands": {},
       "transitions": {}
@@ -479,6 +509,9 @@
       "ascii_art": "the_mirror.png",
       "description": "你什么都没做。时间到了。",
       "on_enter": "[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：07:55 AM\n  ⏰ 后门全面触发：08:00 AM\n  ⏰ 剩余时间：5 分钟\n  📊 已泄露数据：2,280,000 / 2,340,000 (97.4%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[dim]你坐在椅子上，看着屏幕上的数字跳动。\n\n2,290,000...\n2,310,000...\n2,330,000...[/dim]\n\n\n[red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ⏰ 当前时间：08:00 AM\n  📊 已泄露数据：2,340,000 / 2,340,000 (100.0%)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/red]\n\n[bold red]导出完成。[/bold red]\n\n\n最终统计：\n[dim]  总用户数：    2,340,000[/dim]\n[red]  已泄露：      2,340,000 (100%)[/red]\n[green]  已保护：              0 (0%)[/green]\n\n[dim]234 万条实时位置记录。全部流出。\n三家医院的急救调度。城市公交轨迹。共享出行数据。\n全部落入境外服务器。[/dim]\n\n\n[dim]......[/dim]\n\n\n一切安静了。\n数据流停止了——不是因为被阻止，而是因为已经没有什么可以偷的了。\n\n你盯着空白的终端。\n\n你手里有 killswitch。你有密钥。你有一切。\n你本可以阻止这一切。\n\n[bold red]你选择了什么都不做。[/bold red]\n\n\n[dim]......[/dim]\n\n\n手机震了一下。\n\n[yellow]短信 - 未知号码 08:03 AM：\n我们找到了后门的证据链。\n你的 SSH key 签名在 commit b8e224f 上。\n但 killswitch 呢？陈默说你会执行的。\n\n……你没有执行？\n\n—— 莫然[/yellow]\n\n\n然后，另一条消息：\n\n[red]Slack DM - 赵明 08:05 AM：\n{player_name}，安全团队完成了流量分析。\n你的机器是数据外泄的源头。你的 SSH key 签了那个 commit。\n\n我已经通知了法务和 HR。\n警方也在路上。\n\n别跑。[/red]\n\n\n[dim]门外传来脚步声。\n\n你可以解释你是无辜的。你可以说你是被操控的。\n但 234 万条数据已经泄露了——全部。\n没有 killswitch 的记录来证明你试图阻止。\n没有任何证据显示你做过任何事。\n\n因为你确实什么都没做。[/dim]\n\n\n[bold red]你失去了一切。不是因为 SHEPHERD 控制了你。而是因为你清醒地选择了什么都不做。[/bold red]\n\n\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n[bold red]                  BAD END[/bold red]\n[bold red]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/bold red]\n\n\n[dim]输入 [bold]quit[/bold] 退出游戏。\n输入 [bold]restart[/bold] 从第二章开头重新开始。\n\n也许这次，你会做出不同的选择。[/dim]",
+      "hints": [
+        "你选择了沉默。输入 quit 退出游戏。"
+      ],
       "items": [],
       "commands": {
         "restart": {

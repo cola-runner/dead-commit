@@ -68,7 +68,8 @@ def parse_command(
 
     scene = scene_mgr.current
     if scene is None:
-        return CommandResult(message="[red]错误：没有当前场景。[/red]")
+        en = scene_mgr.lang == "en"
+        return CommandResult(message="[red]Error: no current scene.[/red]" if en else "[red]错误：没有当前场景。[/red]")
 
     # Built-in commands
     if cmd == "hint":
@@ -84,7 +85,7 @@ def parse_command(
     if cmd == "cat":
         return _cmd_cat(arg, scene, scene_mgr, inventory)
     if cmd == "take":
-        return _cmd_take(arg, scene, inventory)
+        return _cmd_take(arg, scene, inventory, scene_mgr)
     if cmd == "use":
         return _cmd_use(arg, scene, scene_mgr, inventory)
 
@@ -273,8 +274,9 @@ def _cmd_ls(scene, scene_mgr=None) -> CommandResult:
 
 
 def _cmd_cat(arg: str, scene, scene_mgr, inventory) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not arg:
-        return CommandResult(message="[dim]cat 什么？试试 [bold]cat <物品名>[/bold][/dim]")
+        return CommandResult(message="[dim]Cat what? Try [bold]cat <item>[/bold][/dim]" if en else "[dim]cat 什么？试试 [bold]cat <物品名>[/bold][/dim]")
 
     # Check if cat triggers a scene transition
     trigger = f"cat_{arg}"
@@ -303,15 +305,16 @@ def _cmd_cat(arg: str, scene, scene_mgr, inventory) -> CommandResult:
                 break
         if item_data and "content" in item_data:
             return CommandResult(message=item_data["content"])
-        return CommandResult(message=f"[yellow]{arg}[/yellow] 没什么可读的。")
+        return CommandResult(message=f"Nothing to read on [yellow]{arg}[/yellow]." if en else f"[yellow]{arg}[/yellow] 没什么可读的。")
 
     content = scene.read_item(arg)
     return CommandResult(message=content)
 
 
-def _cmd_take(arg: str, scene, inventory) -> CommandResult:
+def _cmd_take(arg: str, scene, inventory, scene_mgr=None) -> CommandResult:
+    en = scene_mgr.lang == "en" if scene_mgr else False
     if not arg:
-        return CommandResult(message="[dim]take 什么？试试 [bold]take <物品名>[/bold][/dim]")
+        return CommandResult(message="[dim]Take what? Try [bold]take <item>[/bold][/dim]" if en else "[dim]take 什么？试试 [bold]take <物品名>[/bold][/dim]")
     success, msg, desc = scene.take_item(arg)
     if success:
         return CommandResult(message=inventory.add(arg, desc))
@@ -319,15 +322,16 @@ def _cmd_take(arg: str, scene, inventory) -> CommandResult:
 
 
 def _cmd_use(arg: str, scene, scene_mgr, inventory) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not arg:
-        return CommandResult(message="[dim]use 什么？试试 [bold]use <物品> [目标][/bold][/dim]")
+        return CommandResult(message="[dim]Use what? Try [bold]use <item> [target][/bold][/dim]" if en else "[dim]use 什么？试试 [bold]use <物品> [目标][/bold][/dim]")
 
     parts = arg.split(maxsplit=1)
     item_name = parts[0]
     target = parts[1] if len(parts) > 1 else ""
 
     if not inventory.has(item_name):
-        return CommandResult(message=f"你没有 [yellow]{item_name}[/yellow]。")
+        return CommandResult(message=f"You don't have [yellow]{item_name}[/yellow]." if en else f"你没有 [yellow]{item_name}[/yellow]。")
 
     # Check for scene transitions triggered by use
     trigger = f"use_{item_name}_{target}" if target else f"use_{item_name}"
@@ -336,7 +340,7 @@ def _cmd_use(arg: str, scene, scene_mgr, inventory) -> CommandResult:
 
     if transition:
         result = CommandResult(
-            message=transition.get("message", f"你使用了 {item_name}。"),
+            message=transition.get("message", f"You used {item_name}." if en else f"你使用了 {item_name}。"),
             scene_change=transition.get("target_scene", ""),
         )
         if "add_flag" in transition:
@@ -345,16 +349,21 @@ def _cmd_use(arg: str, scene, scene_mgr, inventory) -> CommandResult:
             inventory.remove(item_name)
         return result
 
-    return CommandResult(
-        message=f"在这里没法用 [yellow]{item_name}[/yellow]" + (f" 对 [yellow]{target}[/yellow]" if target else "") + "。"
-    )
+    if en:
+        msg = f"Can't use [yellow]{item_name}[/yellow] here" + (f" on [yellow]{target}[/yellow]" if target else "") + "."
+    else:
+        msg = f"在这里没法用 [yellow]{item_name}[/yellow]" + (f" 对 [yellow]{target}[/yellow]" if target else "") + "。"
+    return CommandResult(message=msg)
 
 
 def _cmd_ssh(arg: str, scene, scene_mgr, inventory) -> CommandResult:
+    en = scene_mgr.lang == "en"
+    _unknown_ssh = (f"[dim]Unknown command: ssh. Type [bold]help[/bold] for available commands.[/dim]" if en
+                    else "[dim]不认识的命令：ssh。输入 [bold]help[/bold] 查看可用命令。[/dim]")
     if not arg:
         if not scene_mgr.has_flag("unlock_advanced"):
-            return CommandResult(message="[dim]不认识的命令：ssh。输入 [bold]help[/bold] 查看可用命令。[/dim]")
-        return CommandResult(message="[dim]ssh 到哪里？试试 [bold]ssh <地址>[/bold][/dim]")
+            return CommandResult(message=_unknown_ssh)
+        return CommandResult(message="[dim]SSH where? Try [bold]ssh <host>[/bold][/dim]" if en else "[dim]ssh 到哪里？试试 [bold]ssh <地址>[/bold][/dim]")
 
     # Always check for scene transitions first (some scenes use ssh to progress)
     trigger = f"ssh_{arg}"
@@ -362,7 +371,7 @@ def _cmd_ssh(arg: str, scene, scene_mgr, inventory) -> CommandResult:
     transition = scene.check_transition(trigger, scene_mgr.flags, inv_names)
     if transition:
         result = CommandResult(
-            message=transition.get("message", f"连接到 {arg}..."),
+            message=transition.get("message", f"Connecting to {arg}..." if en else f"连接到 {arg}..."),
             scene_change=transition.get("target_scene", ""),
         )
         if "add_flag" in transition:
@@ -370,30 +379,32 @@ def _cmd_ssh(arg: str, scene, scene_mgr, inventory) -> CommandResult:
         return result
 
     if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：ssh。输入 [bold]help[/bold] 查看可用命令。[/dim]")
+        return CommandResult(message=_unknown_ssh)
 
-    return CommandResult(message=f"[red]连接失败：{arg} 无法访问。[/red]")
+    return CommandResult(message=f"[red]Connection failed: {arg} unreachable.[/red]" if en else f"[red]连接失败：{arg} 无法访问。[/red]")
 
 
 def _cmd_scan(scene, scene_mgr) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：scan。输入 [bold]help[/bold] 查看可用命令。[/dim]")
+        return CommandResult(message=f"[dim]Unknown command: scan. Type [bold]help[/bold] for available commands.[/dim]" if en else "[dim]不认识的命令：scan。输入 [bold]help[/bold] 查看可用命令。[/dim]")
 
     scan_cmd = scene.commands.get("scan")
     if scan_cmd:
-        result = CommandResult(message=scan_cmd.get("response", "扫描中..."))
+        result = CommandResult(message=scan_cmd.get("response", "Scanning..." if en else "扫描中..."))
         if "add_flag" in scan_cmd:
             result.add_flag = scan_cmd["add_flag"]
         return result
 
-    return CommandResult(message="[dim]扫描完成。未发现新的网络节点。[/dim]")
+    return CommandResult(message="[dim]Scan complete. No new nodes found.[/dim]" if en else "[dim]扫描完成。未发现新的网络节点。[/dim]")
 
 
 def _cmd_grep(arg: str, scene, scene_mgr, inventory) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：grep。输入 [bold]help[/bold] 查看可用命令。[/dim]")
+        return CommandResult(message=f"[dim]Unknown command: grep. Type [bold]help[/bold] for available commands.[/dim]" if en else "[dim]不认识的命令：grep。输入 [bold]help[/bold] 查看可用命令。[/dim]")
     if not arg:
-        return CommandResult(message="[dim]grep 什么？试试 [bold]grep <关键词> [文件][/bold][/dim]")
+        return CommandResult(message="[dim]Grep what? Try [bold]grep <keyword> [file][/bold][/dim]" if en else "[dim]grep 什么？试试 [bold]grep <关键词> [文件][/bold][/dim]")
 
     grep_cmd = scene.commands.get("grep")
     if grep_cmd:
@@ -415,33 +426,35 @@ def _cmd_grep(arg: str, scene, scene_mgr, inventory) -> CommandResult:
                 result.add_flag = grep_cmd["add_flag"]
             return result
 
-    return CommandResult(message=f"[dim]没有找到匹配 '{arg}' 的内容。[/dim]")
+    return CommandResult(message=f"[dim]No matches found for '{arg}'.[/dim]" if en else f"[dim]没有找到匹配 '{arg}' 的内容。[/dim]")
 
 
 def _cmd_decrypt(arg: str, scene, scene_mgr, inventory) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：decrypt。输入 [bold]help[/bold] 查看可用命令。[/dim]")
+        return CommandResult(message=f"[dim]Unknown command: decrypt. Type [bold]help[/bold] for available commands.[/dim]" if en else "[dim]不认识的命令：decrypt。输入 [bold]help[/bold] 查看可用命令。[/dim]")
     if not arg:
-        return CommandResult(message="[dim]decrypt 什么？试试 [bold]decrypt <文件>[/bold][/dim]")
+        return CommandResult(message="[dim]Decrypt what? Try [bold]decrypt <file>[/bold][/dim]" if en else "[dim]decrypt 什么？试试 [bold]decrypt <文件>[/bold][/dim]")
 
     trigger = f"decrypt_{arg}"
     inv_names = list(inventory.items.keys())
     transition = scene.check_transition(trigger, scene_mgr.flags, inv_names)
     if transition:
         result = CommandResult(
-            message=transition.get("message", "解密中..."),
+            message=transition.get("message", "Decrypting..." if en else "解密中..."),
             scene_change=transition.get("target_scene", ""),
         )
         if "add_flag" in transition:
             result.add_flag = transition["add_flag"]
         return result
 
-    return CommandResult(message=f"[red]无法解密 {arg}。也许你需要先找到密钥。[/red]")
+    return CommandResult(message=f"[red]Cannot decrypt {arg}. Perhaps you need to find the key first.[/red]" if en else f"[red]无法解密 {arg}。也许你需要先找到密钥。[/red]")
 
 
 def _cmd_history(scene, scene_mgr) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：history。输入 [bold]help[/bold] 查看可用命令。[/dim]")
+        return CommandResult(message=f"[dim]Unknown command: history. Type [bold]help[/bold] for available commands.[/dim]" if en else "[dim]不认识的命令：history。输入 [bold]help[/bold] 查看可用命令。[/dim]")
 
     history_cmd = scene.commands.get("history")
     if history_cmd:
@@ -450,12 +463,13 @@ def _cmd_history(scene, scene_mgr) -> CommandResult:
             result.add_flag = history_cmd["add_flag"]
         return result
 
-    return CommandResult(message="[dim]这台机器上没有命令历史。[/dim]")
+    return CommandResult(message="[dim]No command history on this machine.[/dim]" if en else "[dim]这台机器上没有命令历史。[/dim]")
 
 
 def _cmd_ps(scene, scene_mgr) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：ps。输入 [bold]help[/bold] 查看可用命令。[/dim]")
+        return CommandResult(message=f"[dim]Unknown command: ps. Type [bold]help[/bold] for available commands.[/dim]" if en else "[dim]不认识的命令：ps。输入 [bold]help[/bold] 查看可用命令。[/dim]")
 
     ps_cmd = scene.commands.get("ps")
     if ps_cmd:
@@ -464,14 +478,15 @@ def _cmd_ps(scene, scene_mgr) -> CommandResult:
             result.add_flag = ps_cmd["add_flag"]
         return result
 
-    return CommandResult(message="[dim]没有运行中的特殊进程。[/dim]")
+    return CommandResult(message="[dim]No notable processes running.[/dim]" if en else "[dim]没有运行中的特殊进程。[/dim]")
 
 
 def _cmd_kill(arg: str, scene, scene_mgr, inventory) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：kill。输入 [bold]help[/bold] 查看可用命令。[/dim]")
+        return CommandResult(message=f"[dim]Unknown command: kill. Type [bold]help[/bold] for available commands.[/dim]" if en else "[dim]不认识的命令：kill。输入 [bold]help[/bold] 查看可用命令。[/dim]")
     if not arg:
-        return CommandResult(message="[dim]kill 什么？试试 [bold]kill <PID>[/bold][/dim]")
+        return CommandResult(message="[dim]Kill what? Try [bold]kill <PID>[/bold][/dim]" if en else "[dim]kill 什么？试试 [bold]kill <PID>[/bold][/dim]")
 
     # Check transitions first (like ssh/decrypt)
     trigger = f"kill_{arg}"
@@ -479,7 +494,7 @@ def _cmd_kill(arg: str, scene, scene_mgr, inventory) -> CommandResult:
     transition = scene.check_transition(trigger, scene_mgr.flags, inv_names)
     if transition:
         result = CommandResult(
-            message=transition.get("message", f"终止进程 {arg}..."),
+            message=transition.get("message", f"Terminating process {arg}..." if en else f"终止进程 {arg}..."),
             scene_change=transition.get("target_scene", ""),
         )
         if "add_flag" in transition:
@@ -505,12 +520,13 @@ def _cmd_kill(arg: str, scene, scene_mgr, inventory) -> CommandResult:
                 result.add_flag = kill_cmd["add_flag"]
             return result
 
-    return CommandResult(message=f"[red]没有找到进程 {arg}。[/red]")
+    return CommandResult(message=f"[red]Process {arg} not found.[/red]" if en else f"[red]没有找到进程 {arg}。[/red]")
 
 
 def _cmd_crontab(scene, scene_mgr) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：crontab。输入 [bold]help[/bold] 查看可用命令。[/dim]")
+        return CommandResult(message=f"[dim]Unknown command: crontab. Type [bold]help[/bold] for available commands.[/dim]" if en else "[dim]不认识的命令：crontab。输入 [bold]help[/bold] 查看可用命令。[/dim]")
 
     crontab_cmd = scene.commands.get("crontab")
     if crontab_cmd:
@@ -519,14 +535,15 @@ def _cmd_crontab(scene, scene_mgr) -> CommandResult:
             result.add_flag = crontab_cmd["add_flag"]
         return result
 
-    return CommandResult(message="[dim]没有定时任务。[/dim]")
+    return CommandResult(message="[dim]No cron jobs found.[/dim]" if en else "[dim]没有定时任务。[/dim]")
 
 
 def _cmd_run(arg: str, scene, scene_mgr, inventory) -> CommandResult:
+    en = scene_mgr.lang == "en"
     if not scene_mgr.has_flag("unlock_advanced"):
-        return CommandResult(message="[dim]不认识的命令：run。输入 [bold]help[/bold] 查看可用命令。[/dim]")
+        return CommandResult(message=f"[dim]Unknown command: run. Type [bold]help[/bold] for available commands.[/dim]" if en else "[dim]不认识的命令：run。输入 [bold]help[/bold] 查看可用命令。[/dim]")
     if not arg:
-        return CommandResult(message="[dim]run 什么？试试 [bold]run <脚本>[/bold][/dim]")
+        return CommandResult(message="[dim]Run what? Try [bold]run <script>[/bold][/dim]" if en else "[dim]run 什么？试试 [bold]run <脚本>[/bold][/dim]")
 
     # Check transitions (run_execute.sh etc.)
     trigger = f"run_{arg}"
@@ -534,11 +551,11 @@ def _cmd_run(arg: str, scene, scene_mgr, inventory) -> CommandResult:
     transition = scene.check_transition(trigger, scene_mgr.flags, inv_names)
     if transition:
         result = CommandResult(
-            message=transition.get("message", f"执行 {arg}..."),
+            message=transition.get("message", f"Executing {arg}..." if en else f"执行 {arg}..."),
             scene_change=transition.get("target_scene", ""),
         )
         if "add_flag" in transition:
             result.add_flag = transition["add_flag"]
         return result
 
-    return CommandResult(message=f"[red]找不到脚本 {arg}。[/red]")
+    return CommandResult(message=f"[red]Script {arg} not found.[/red]" if en else f"[red]找不到脚本 {arg}。[/red]")
